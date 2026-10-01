@@ -31,6 +31,21 @@ Para personalizar o HTML, faz-se um override em `templates/<template>/html/mod_l
 
 O módulo não aparece enquanto o plugin *Sistema - LCookies* estiver desligado.
 
+## Pedidos de privacidade (`plg_privacy_lcookies`)
+
+O plugin *Privacidade - LCookies* liga os registos de consentimento aos pedidos de *Utilizadores → Privacidade*, que é como o RGPD é tratado no Joomla.
+
+**Que registos abrange:** só as escolhas feitas com sessão iniciada estão ligadas a uma conta (`user_id`). As escolhas feitas como visitante não podem ser associadas a uma pessoa e ficam como estão.
+
+**Exportação:** os registos do utilizador entram no domínio `lcookies_consents`. Cada registo leva o id do consentimento, a ação, as categorias, a versão da política, a página, o idioma, a data em UTC e os hashes do IP e do browser.
+
+**Remoção:** o que acontece depende da opção do plugin.
+
+| Opção | Efeito | Para que serve |
+|---|---|---|
+| *Desligar da conta* (por omissão) | Os registos ficam guardados, sem `user_id` | Manter a prova de consentimento, que passa a ser só um id aleatório e hashes |
+| *Apagar os registos* | Os registos são eliminados | Remover tudo |
+
 ## Regra de ouro: cache
 
 A forma mais segura é deixar o código sempre no HTML e deixar o LCookies bloqueá-lo:

@@ -383,6 +383,45 @@ check("dashboard alerts: plugin disabled, unclassified, not blocked",
 sql("UPDATE jos_extensions SET enabled = 1 WHERE type = 'plugin' AND folder = 'system' AND element = 'lcookies'")
 sql("DELETE FROM jos_lcookies_services WHERE alias = 'lcdash-svc'")
 
+# Privacy requests (plg_privacy_lcookies) ---------------------------------------------------------
+q = '"' if DB.endswith("pg") else "`"
+cols = ", ".join(f"{q}{c}{q}" for c in ["id", "name", "username", "email", "password", "block", "sendEmail", "registerDate", "params", "requireReset"])
+sql("DELETE FROM jos_user_usergroup_map WHERE user_id = 9901; DELETE FROM jos_users WHERE id = 9901")
+sql(f"INSERT INTO jos_users ({cols}) VALUES (9901, 'LC Privacy', 'lcprivacy', 'lcprivacy@example.com', 'x', 0, 0, NOW(), '{{}}', 0)")
+sql("INSERT INTO jos_user_usergroup_map (user_id, group_id) VALUES (9901, 2)")
+P1, P2 = "dddddddd-0000-4000-8000-000000000001", "dddddddd-0000-4000-8000-000000000002"
+sql("INSERT INTO jos_lcookies_consents (consent_uuid, action, categories, policy_version, user_id, ip_hash, ua_hash, url, language, created) VALUES "
+    f"('{P1}', 'accept_all', '[\"necessary\",\"statistics\"]', 1, 9901, 'iphash', 'uahash', 'http://x/', 'en-GB', NOW()), "
+    f"('{P2}', 'reject_all', '[\"necessary\"]', 1, 9901, 'iphash', 'uahash', 'http://x/', 'en-GB', NOW())")
+sql("DELETE FROM jos_privacy_requests WHERE email = 'lcprivacy@example.com'")
+
+
+def privacy_request(kind):
+    sql("INSERT INTO jos_privacy_requests (email, requested_at, status, request_type, confirm_token) "
+        f"VALUES ('lcprivacy@example.com', NOW(), 1, '{kind}', '')")
+    return sql(f"SELECT MAX(id) FROM jos_privacy_requests WHERE email = 'lcprivacy@example.com' AND request_type = '{kind}'")
+
+
+xml = req(f"?option=com_privacy&task=request.export&format=xml&id={privacy_request('export')}")
+check("privacy export has the user's consent records", 'name="lcookies_consents"' in xml and P1 in xml and P2 in xml
+      and U2 not in xml and "UTC" in xml and "iphash" in xml, xml[:400])
+html = req("?option=com_privacy&view=requests")
+html = req(f"?option=com_privacy&task=request.remove&id={privacy_request('remove')}&{token(html)}=1")
+row = sql(f"SELECT COUNT(*), SUM(CASE WHEN user_id IS NULL THEN 1 ELSE 0 END) FROM jos_lcookies_consents WHERE consent_uuid IN ('{P1}', '{P2}')")
+check("privacy remove (default): records kept, unlinked from the account", row.split() == ["2", "2"], row + " " + str(messages(html)))
+sql("UPDATE jos_extensions SET params = '{\"removal\":\"delete\"}' WHERE type = 'plugin' AND folder = 'privacy' AND element = 'lcookies'")
+sql(f"UPDATE jos_lcookies_consents SET user_id = 9901 WHERE consent_uuid IN ('{P1}', '{P2}')")
+# plg_privacy_user pseudonymised the account (e-mail included): give it back for the second request.
+sql("UPDATE jos_users SET email = 'lcprivacy@example.com', block = 0 WHERE id = 9901")
+html = req("?option=com_privacy&view=requests")
+html = req(f"?option=com_privacy&task=request.remove&id={privacy_request('remove')}&{token(html)}=1")
+row = sql(f"SELECT COUNT(*) FROM jos_lcookies_consents WHERE consent_uuid IN ('{P1}', '{P2}')")
+check("privacy remove (delete option): records deleted, others kept", row == "0"
+      and sql(f"SELECT COUNT(*) FROM jos_lcookies_consents WHERE consent_uuid = '{U2}'") == "1", row + " " + str(messages(html)))
+sql("UPDATE jos_extensions SET params = '{}' WHERE type = 'plugin' AND folder = 'privacy' AND element = 'lcookies'")
+sql("DELETE FROM jos_privacy_requests WHERE email = 'lcprivacy@example.com'")
+sql("DELETE FROM jos_user_usergroup_map WHERE user_id = 9901; DELETE FROM jos_users WHERE id = 9901")
+
 # Permissions: a Manager allowed to manage the component still needs the consents permissions
 php = f"{L}/php"
 pw = subprocess.run([php, "-r", "echo password_hash('Manager123456789!', PASSWORD_BCRYPT);"], capture_output=True, text=True).stdout

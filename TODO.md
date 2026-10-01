@@ -66,7 +66,7 @@ Ao fechar uma fase: marcar tudo, preencher `docs/fases/fase-N.md` e atualizar o 
 - [x] `mod_lcookies` (botão de preferências, escolha atual preenchida em JS, link para a política)
 - [x] `plg_content_lcookies` ({lcookies-table}, {lcookies-settings}; layouts `lcookies.policy`/`lcookies.settings`)
 - [ ] `plg_task_lcookies` (purga + scan agendado)
-- [ ] `plg_privacy_lcookies`
+- [x] `plg_privacy_lcookies` (exportação + remoção: desligar da conta ou apagar)
 - [x] `ConsentHelper::has()` + evento `onLCookiesConsentChange` (`docs/developers.md`)
 
 ## Fase 6 — Qualidade

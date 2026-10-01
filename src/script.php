@@ -38,7 +38,7 @@ class Pkg_LcookiesInstallerScript extends InstallerScript
      *
      * @var  array
      */
-    private array $plugins = [['system', 'lcookies'], ['webservices', 'lcookies'], ['content', 'lcookies']];
+    private array $plugins = [['system', 'lcookies'], ['webservices', 'lcookies'], ['content', 'lcookies'], ['privacy', 'lcookies']];
 
     /**
      * Plugins that were not installed before this run.
