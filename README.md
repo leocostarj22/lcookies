@@ -4,7 +4,8 @@ Sistema de consentimento de cookies para **Joomla 5.2+ e 6**: banner e preferên
 
 - Plano e arquitetura: [`docs/PLAN.md`](docs/PLAN.md)
 - Contrato do frontend: [`docs/contract.schema.json`](docs/contract.schema.json)
-- API: [`docs/api.md`](docs/api.md)
+- API REST: [`docs/api.md`](docs/api.md)
+- Integração (PHP `ConsentHelper`, evento `onLCookiesConsentChange`, API JavaScript): [`docs/developers.md`](docs/developers.md)
 - Estado e notas de cada fase: [`TODO.md`](TODO.md), [`docs/fases/`](docs/fases/)
 
 ## Instalação

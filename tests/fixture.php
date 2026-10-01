@@ -5,7 +5,10 @@
  *
  * Usage:
  *   php tests/fixture.php <joomla root> setup             test services, cookies, a mod_custom with
- *                                                        scripts/iframes and the files in media/lctest
+ *                                                        scripts/iframes, the files in media/lctest and the
+ *                                                        plugin plg_system_lctest (ConsentHelper answers at
+ *                                                        the end of each page, onLCookiesConsentChange log)
+ *   php tests/fixture.php <joomla root> events           prints the onLCookiesConsentChange events as JSON
  *   php tests/fixture.php <joomla root> params k=v ...   sets options of com_lcookies (JSON values)
  *   php tests/fixture.php <joomla root> consents         prints the consent records as JSON
  *   php tests/fixture.php <joomla root> token <username> [group id]
@@ -24,8 +27,8 @@
 [$script, $root, $command] = $argv + [null, null, null];
 $args = array_slice($argv, 3);
 
-if (!$root || !is_file($root . '/configuration.php') || !in_array($command, ['setup', 'params', 'consents', 'token', 'asset', 'plugin', 'deluser', 'teardown'], true)) {
-    fwrite(STDERR, "Usage: php tests/fixture.php <joomla root> setup|params|consents|token|asset|plugin|deluser|teardown [key=value ...]\n");
+if (!$root || !is_file($root . '/configuration.php') || !in_array($command, ['setup', 'params', 'consents', 'events', 'token', 'asset', 'plugin', 'deluser', 'teardown'], true)) {
+    fwrite(STDERR, "Usage: php tests/fixture.php <joomla root> setup|params|consents|events|token|asset|plugin|deluser|teardown [key=value ...]\n");
     exit(1);
 }
 
@@ -45,6 +48,8 @@ $now    = gmdate('Y-m-d H:i:s');
 const SVC_STATS = 9001;
 const SVC_VIDEO = 9002;
 const MODULE    = 9001;
+const PLUGIN    = 9001;
+const EVENTS    = '/tmp/lctest-events.log';
 
 function run(PDO $db, string $sql, array $values = []): void
 {
@@ -64,11 +69,23 @@ function teardown(PDO $db, string $p, string $root): void
     }
 
     @rmdir($root . '/media/lctest');
+
+    run($db, "DELETE FROM {$p}extensions WHERE extension_id = " . PLUGIN);
+    @unlink($root . '/plugins/system/lctest/services/provider.php');
+    @rmdir($root . '/plugins/system/lctest/services');
+    @rmdir($root . '/plugins/system/lctest');
+    @unlink($root . EVENTS);
 }
 
 if ($command === 'teardown') {
     teardown($db, $p, $root);
     echo "teardown ok\n";
+    exit;
+}
+
+if ($command === 'events') {
+    $lines = is_file($root . EVENTS) ? file($root . EVENTS, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) : [];
+    echo '[' . implode(',', $lines) . "]\n";
     exit;
 }
 
@@ -211,5 +228,73 @@ file_put_contents($root . '/media/lctest/analytics-test.js', "window.lcTestExter
 file_put_contents($root . '/media/lctest/analytics-test-module.js', "window.lcTestModule = true;\n");
 file_put_contents($root . '/media/lctest/analytics-test-dyn.js', "window.lcTestDyn = true;\n");
 file_put_contents($root . '/media/lctest/frame-marketing.html', "<!doctype html><title>frame</title><p>Marketing frame</p>\n");
+
+// plg_system_lctest: shows what ConsentHelper answers and logs onLCookiesConsentChange.
+$provider = <<<'PHP'
+<?php
+\defined('_JEXEC') or die;
+
+use Joomla\CMS\Extension\PluginInterface;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Plugin\CMSPlugin;
+use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\DI\Container;
+use Joomla\DI\ServiceProviderInterface;
+use Joomla\Event\DispatcherInterface;
+use Joomla\Event\SubscriberInterface;
+use Lcsilva\Component\Lcookies\Administrator\Event\ConsentChangeEvent;
+use Lcsilva\Component\Lcookies\Administrator\Helper\ConsentHelper;
+
+return new class () implements ServiceProviderInterface {
+    public function register(Container $container): void
+    {
+        $container->set(PluginInterface::class, function (Container $container) {
+            $config = (array) PluginHelper::getPlugin('system', 'lctest');
+            $args   = version_compare(JVERSION, '5.3.0', '<') ? [$container->get(DispatcherInterface::class), $config] : [$config];
+            $plugin = new class (...$args) extends CMSPlugin implements SubscriberInterface {
+                public static function getSubscribedEvents(): array
+                {
+                    return ['onAfterRender' => 'afterRender', 'onLCookiesConsentChange' => 'consentChange'];
+                }
+
+                public function afterRender(): void
+                {
+                    $app = $this->getApplication();
+
+                    if (!$app->isClient('site') || $app->getDocument()?->getType() !== 'html') {
+                        return;
+                    }
+
+                    $has = [];
+
+                    foreach (['necessary', 'statistics', 'marketing', 'nope'] as $category) {
+                        $has[$category] = ConsentHelper::has($category);
+                    }
+
+                    $info = json_encode(['has' => $has, 'granted' => ConsentHelper::granted(), 'consent' => ConsentHelper::get()]);
+                    $app->setBody(str_replace('</body>', '<script type="application/json" id="lctest-helper">' . $info . '</script></body>', $app->getBody()));
+                }
+
+                public function consentChange(ConsentChangeEvent $event): void
+                {
+                    file_put_contents(JPATH_ROOT . '/tmp/lctest-events.log', json_encode([
+                        'id' => $event->getConsentId(), 'action' => $event->getAction(), 'categories' => $event->getCategories(),
+                        'previous' => $event->getPrevious(), 'granted' => $event->getGranted(), 'revoked' => $event->getRevoked(),
+                        'version' => $event->getPolicyVersion(), 'user' => $event->getUserId(),
+                    ]) . "\n", FILE_APPEND);
+                }
+            };
+            $plugin->setApplication(Factory::getApplication());
+
+            return $plugin;
+        });
+    }
+};
+PHP;
+@mkdir($root . '/plugins/system/lctest/services', 0777, true);
+file_put_contents($root . '/plugins/system/lctest/services/provider.php', $provider);
+run($db, "INSERT INTO {$p}extensions (extension_id, package_id, name, type, element, folder, client_id, enabled, access, protected, locked, manifest_cache, params, custom_data, ordering, state)
+    VALUES (?, 0, 'plg_system_lctest', 'plugin', 'lctest', 'system', 0, 1, 1, 0, 0, '{}', '{}', '', 99, 0)", [PLUGIN]);
+@unlink($root . EVENTS);
 
 echo "setup ok\n";

@@ -91,6 +91,8 @@ const globals = (page) => page.evaluate(() => ({
   body: window.lcBodyCode,
   free: window.lcFree,
 }));
+// What ConsentHelper (PHP) answered when the page was built (plugin plg_system_lctest of tests/fixture.php).
+const helper = (page) => page.evaluate(() => JSON.parse(document.getElementById('lctest-helper').textContent));
 const gcm = (page, kind) => page.evaluate((k) => (window.dataLayer || [])
   .filter((e) => e && e[0] === 'consent' && e[1] === k).map((e) => e[2]), kind);
 
@@ -115,6 +117,9 @@ async function main() {
 
     check('banner visible', await page.isVisible('[data-lcookies-banner]'));
     check('floating button hidden', !(await page.isVisible('[data-lcookies-floating]')));
+    let h = await helper(page);
+    check('PHP ConsentHelper without a choice: only required', h.has.necessary && !h.has.statistics && !h.has.marketing && !h.has.nope
+      && h.granted.join() === 'necessary' && h.consent === null, JSON.stringify(h));
     let g = await globals(page);
     check('external/inline/module scripts blocked', g.external === undefined && g.inline === undefined && g.module === undefined, JSON.stringify(g));
     check('head/body code of the service blocked', g.head === undefined && g.body === undefined);
@@ -242,6 +247,21 @@ async function main() {
     check('page URL without query string', rows.every((r) => r.url.startsWith(url) && !r.url.includes('?')), rows[0].url);
     check('guest, site language', rows.every((r) => r.user_id === null && r.language === 'en-GB'));
 
+    await page.reload();
+    await ready(page);
+    h = await helper(page);
+    check('PHP ConsentHelper reads the cookie like hasConsent()', h.has.necessary && h.has.marketing && !h.has.statistics && !h.has.nope
+      && h.granted.join() === 'necessary,marketing' && h.consent.id === id && h.consent.v === 1, JSON.stringify(h));
+    const changes = JSON.parse(fixture('events'));
+    check('onLCookiesConsentChange once per recorded choice', changes.map((e) => e.action).join() === 'accept_all,custom,reject_all,allow'
+      && changes.every((e) => e.id === id && e.version === 1 && e.user === 0), JSON.stringify(changes));
+    check('event: previous, granted and revoked', JSON.stringify(changes.map((e) => [e.previous, e.granted, e.revoked])) === JSON.stringify([
+      [null, ['necessary', 'statistics', 'marketing'], []],
+      [['necessary', 'statistics', 'marketing'], [], ['statistics']],
+      [['necessary', 'marketing'], [], ['marketing']],
+      [['necessary'], ['marketing'], []],
+    ]), JSON.stringify(changes));
+
     /* 9. New policy version asks again --------------------------------------------------------- */
     console.log('Policy version');
     fixture('params', 'policy_version=2');
@@ -249,6 +269,8 @@ async function main() {
     await ready(page);
     check('banner shown again after a new policy version', await page.isVisible('[data-lcookies-banner]'));
     check('old consent ignored', (await consent(page)) === null && await page.evaluate(() => window.lcTestExternal) === undefined);
+    h = await helper(page);
+    check('PHP ConsentHelper ignores an older policy version', h.consent === null && !h.has.marketing, JSON.stringify(h));
     fixture('params', 'policy_version=1');
     await context.close();
 

@@ -80,7 +80,8 @@ final class ConsentLog
      * @param   array    $visitor    `ip`, `userAgent`, `userId` (0 for guests) and `language`.
      * @param   ?string  $siteRoot   Absolute URL of the site, the page URL must be under it (default Uri::root()).
      *
-     * @return  array  The stored record: `id`, `consent_uuid`, `categories`, `policy_version`, `created`.
+     * @return  array  The stored record: `id`, `consent_uuid`, `action`, `categories`, `policy_version`, `created`, and
+     *                 `previous`: the categories of the last record with the same consent id (null if none).
      *
      * @throws  ConsentException  With the HTTP status as code: 404 disabled, 422 invalid, 429 rate limit.
      */
@@ -106,6 +107,16 @@ final class ConsentLog
             throw new ConsentException('Too many requests.', 429);
         }
 
+        $previous = $this->db->setQuery(
+            $this->db->createQuery()
+                ->select($this->db->quoteName('categories'))
+                ->from($this->db->quoteName('#__lcookies_consents'))
+                ->where($this->db->quoteName('consent_uuid') . ' = :uuid')
+                ->bind(':uuid', $row->consent_uuid)
+                ->order($this->db->quoteName('id') . ' DESC')
+                ->setLimit(1)
+        )->loadResult();
+
         $this->db->insertObject('#__lcookies_consents', $row, 'id');
 
         if (random_int(1, self::PURGE_CHANCE) === 1) {
@@ -115,9 +126,11 @@ final class ConsentLog
         return [
             'id'             => (int) $row->id,
             'consent_uuid'   => $row->consent_uuid,
+            'action'         => $row->action,
             'categories'     => json_decode($row->categories, true),
             'policy_version' => $row->policy_version,
             'created'        => $row->created,
+            'previous'       => $previous === null ? null : json_decode($previous, true),
         ];
     }
 

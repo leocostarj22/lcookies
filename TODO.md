@@ -67,7 +67,7 @@ Ao fechar uma fase: marcar tudo, preencher `docs/fases/fase-N.md` e atualizar o 
 - [ ] `plg_content_lcookies` ({lcookies-table}, {lcookies-settings})
 - [ ] `plg_task_lcookies` (purga + scan agendado)
 - [ ] `plg_privacy_lcookies`
-- [ ] `ConsentHelper::has()` + evento `onLCookiesConsentChange`
+- [x] `ConsentHelper::has()` + evento `onLCookiesConsentChange` (`docs/developers.md`)
 
 ## Fase 6 — Qualidade
 - [ ] Ambiente Docker J5.x e J6.x

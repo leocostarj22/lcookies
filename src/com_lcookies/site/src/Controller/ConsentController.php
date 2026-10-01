@@ -13,12 +13,14 @@ namespace Lcsilva\Component\Lcookies\Site\Controller;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Factory;
 use Joomla\CMS\MVC\Controller\BaseController;
+use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\CMS\Response\JsonResponse;
 use Joomla\Database\DatabaseInterface;
 use Joomla\Utilities\IpHelper;
 use Lcsilva\Component\Lcookies\Administrator\Consent\Anonymizer;
 use Lcsilva\Component\Lcookies\Administrator\Consent\ConsentException;
 use Lcsilva\Component\Lcookies\Administrator\Consent\ConsentLog;
+use Lcsilva\Component\Lcookies\Administrator\Event\ConsentChangeEvent;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -34,6 +36,8 @@ use Lcsilva\Component\Lcookies\Administrator\Consent\ConsentLog;
  * Instead the request must be a same-origin JSON POST (a cross-site form cannot send
  * application/json, and browsers report cross-site requests in Sec-Fetch-Site), the payload is
  * validated strictly and requests are rate limited per truncated IP address.
+ *
+ * Each recorded choice dispatches onLCookiesConsentChange (ConsentChangeEvent).
  */
 class ConsentController extends BaseController
 {
@@ -75,12 +79,24 @@ class ConsentController extends BaseController
                 new Anonymizer((string) $app->get('secret'))
             );
 
+            $userId = (int) $app->getIdentity()?->id;
             $record = $log->record(json_decode($raw, true), [
                 'ip'        => (string) IpHelper::getIp(),
                 'userAgent' => $this->input->server->getString('HTTP_USER_AGENT', ''),
-                'userId'    => (int) $app->getIdentity()?->id,
+                'userId'    => $userId,
                 'language'  => $app->getLanguage()->getTag(),
             ]);
+
+            $dispatcher = $this->getDispatcher();
+            PluginHelper::importPlugin('lcookies', null, true, $dispatcher);
+            $dispatcher->dispatch(ConsentChangeEvent::NAME, new ConsentChangeEvent(ConsentChangeEvent::NAME, [
+                'consentId'     => $record['consent_uuid'],
+                'action'        => $record['action'],
+                'categories'    => $record['categories'],
+                'previous'      => $record['previous'],
+                'policyVersion' => (int) $record['policy_version'],
+                'userId'        => $userId,
+            ]));
 
             echo new JsonResponse(['id' => $record['consent_uuid'], 'created' => $record['created']]);
         } catch (ConsentException $e) {
