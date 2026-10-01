@@ -2,6 +2,22 @@
 
 Como ligar outras extensões e templates ao consentimento do visitante. Para a API REST ver [`api.md`](api.md).
 
+## Página da política de cookies (`plg_content_lcookies`)
+
+O plugin *Conteúdo - LCookies* substitui estes códigos em artigos, módulos *Personalizado* (com "Preparar conteúdo" ativo) e noutros conteúdos:
+
+| Código | Resultado |
+|---|---|
+| `{lcookies-table}` | tabela com as categorias, os serviços e os cookies, sempre atualizada |
+| `{lcookies-table statistics,marketing}` | só estas categorias (aliases) |
+| `{lcookies-settings}` | botão que abre as preferências de cookies |
+| `{lcookies-settings Alterar a minha escolha}` | o mesmo botão com outro texto |
+
+- **Cache:** o HTML é igual para todos os visitantes, por isso a página pode ir para cache.
+- **Aspeto:** usa as classes do template (Bootstrap no Cassiopeia).
+- **Nível dos títulos:** define-se nas opções do plugin.
+- **Personalizar o HTML:** override em `templates/<template>/html/layouts/lcookies/policy.php` e `settings.php`.
+
 ## Regra de ouro: cache
 
 A forma mais segura é deixar o código sempre no HTML e deixar o LCookies bloqueá-lo:

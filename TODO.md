@@ -64,7 +64,7 @@ Ao fechar uma fase: marcar tudo, preencher `docs/fases/fase-N.md` e atualizar o 
 - [ ] Pré-visualização em tempo real no backend
 - [ ] Validar as traduções pt-PT do frontend num site com o pacote de idioma pt-PT instalado
 - [ ] `mod_lcookies`
-- [ ] `plg_content_lcookies` ({lcookies-table}, {lcookies-settings})
+- [x] `plg_content_lcookies` ({lcookies-table}, {lcookies-settings}; layouts `lcookies.policy`/`lcookies.settings`)
 - [ ] `plg_task_lcookies` (purga + scan agendado)
 - [ ] `plg_privacy_lcookies`
 - [x] `ConsentHelper::has()` + evento `onLCookiesConsentChange` (`docs/developers.md`)

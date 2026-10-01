@@ -159,6 +159,29 @@ async function main() {
     check('focus returns to the button that opened them', await page.evaluate(() => document.activeElement?.dataset.lcookiesAction === 'settings'));
     check('banner still visible without a choice', await page.isVisible('[data-lcookies-banner]'));
 
+    /* Shortcodes of plg_content_lcookies (module of tests/fixture.php) */
+    console.log('Content shortcodes');
+    const policy = await page.evaluate(() => ({
+      all: [...document.querySelectorAll('#lctest-all [data-lcookies-policy]')].map((s) => s.dataset.lcookiesPolicy).join(),
+      marketing: [...document.querySelectorAll('#lctest-marketing [data-lcookies-policy]')].map((s) => s.dataset.lcookiesPolicy).join(),
+      text: document.querySelector('#lctest-all').textContent.replace(/\s+/g, ' '),
+      noCookies: Joomla.getOptions('lcookies').texts.noCookies,
+      inParagraph: Boolean(document.querySelector('p .lcookies-policy, p table')),
+      left: document.body.innerHTML.includes('{lcookies-'),
+      button: document.querySelector('#lctest-settings .lcookies-settings')?.textContent,
+    }));
+    check('{lcookies-table}: the categories of the banner', policy.all === 'necessary,statistics,marketing', JSON.stringify(policy));
+    check('{lcookies-table}: services, cookies and services without cookies', ['Test Analytics', 'Test Inc.', '_lc_test_*', 'lc_test_ls',
+      'Distinguishes users.', 'Test Video'].every((t) => policy.text.includes(t)) && policy.text.includes(policy.noCookies), policy.text);
+    check('{lcookies-table marketing}: one category', policy.marketing === 'marketing', policy.marketing);
+    check('shortcodes replaced, table not left inside a paragraph', !policy.left && !policy.inParagraph);
+    check('{lcookies-settings label}: plain-text label', policy.button === 'Change my choice', policy.button);
+    violations = await axe(page, '#lctest-all');
+    check('axe: policy table without violations', violations.length === 0, violations.join(', '));
+    await page.click('#lctest-settings .lcookies-settings');
+    check('{lcookies-settings} opens the preferences', await page.evaluate(() => document.querySelector('[data-lcookies-preferences]').open));
+    await page.keyboard.press('Escape');
+
     /* 3. Accept all ----------------------------------------------------------------------------- */
     console.log('Accept all');
     await page.evaluate(() => {

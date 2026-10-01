@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension type="plugin" group="content" method="upgrade">
+	<name>plg_content_lcookies</name>
+	<author>leocostadeveloper</author>
+	<creationDate>2026-10</creationDate>
+	<copyright>(C) 2026 leocostadeveloper</copyright>
+	<license>GNU General Public License version 2 or later; see LICENSE.txt</license>
+	<authorEmail></authorEmail>
+	<authorUrl>https://www.leocostadeveloper.com</authorUrl>
+	<version>0.4.0</version>
+	<description>PLG_CONTENT_LCOOKIES_XML_DESCRIPTION</description>
+	<namespace path="src">Lcsilva\Plugin\Content\Lcookies</namespace>
+	<files>
+		<folder plugin="lcookies">services</folder>
+		<folder>language</folder>
+		<folder>layouts</folder>
+		<folder>src</folder>
+	</files>
+	<config>
+		<fields name="params">
+			<fieldset name="basic">
+				<field
+					name="heading_level"
+					type="list"
+					label="PLG_CONTENT_LCOOKIES_HEADING_LEVEL_LABEL"
+					description="PLG_CONTENT_LCOOKIES_HEADING_LEVEL_DESC"
+					default="3"
+					validate="options"
+					>
+					<option value="2">H2</option>
+					<option value="3">H3</option>
+					<option value="4">H4</option>
+					<option value="5">H5</option>
+				</field>
+			</fieldset>
+		</fields>
+	</config>
+</extension>

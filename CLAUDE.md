@@ -12,7 +12,7 @@ Sistema de consentimento de cookies para Joomla 5.x e 6.x. Plano completo: `docs
 3. Ao fechar: criar `docs/fases/fase-N.md` a partir de `docs/fases/_modelo.md` e atualizar "Estado atual" acima.
 
 ## Estrutura
-- `src/` — código das extensões (`src/com_lcookies` com `admin/`, `site/`, `api/`; `src/plg_system_lcookies`, `src/plg_webservices_lcookies`, futuros `src/plg_*`, `src/mod_*`) + manifest do pacote. Plugins novos: listar em `src/pkg_lcookies.xml` e em `$plugins` de `src/script.php` (ativação na 1.ª instalação).
+- `src/` — código das extensões (`src/com_lcookies` com `admin/`, `site/`, `api/`; `src/plg_system_lcookies`, `src/plg_webservices_lcookies`, `src/plg_content_lcookies`, futuros `src/plg_*`, `src/mod_*`) + manifest do pacote. Plugins novos: listar em `src/pkg_lcookies.xml` e em `$plugins` de `src/script.php` (ativação na 1.ª instalação).
 - Releases: tag `vX.Y.Z` igual a `<version>` de `src/pkg_lcookies.xml` → `.github/workflows/release.yml` cria a release no GitHub (`leocostarj22/lcookies`, público) com o zip e `pkg_lcookies.xml` (servidor de atualizações: `releases/latest/download/pkg_lcookies.xml`, sha512). Ver `README.md`.
 - `build/build.py` — gera `dist/pkg_lcookies-<versão>.zip` e `dist/pkg_lcookies.xml` (cada pasta `com_/plg_/mod_` vira `packages/<nome>.zip`; tem de estar listada em `src/pkg_lcookies.xml`). Minifica os `.js/.css` de `media/` com esbuild → precisa de `npm install` (ver `package.json`).
 - `tests/e2e_admin.py` — teste end-to-end do backend (ver `docs/fases/fase-1.md`).
