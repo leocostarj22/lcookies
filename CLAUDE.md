@@ -3,8 +3,18 @@
 Sistema de consentimento de cookies para Joomla 5.x e 6.x. Plano completo: `docs/PLAN.md`. Tarefas: `TODO.md`.
 
 ## Estado atual
-- **Fase concluída:** 4 — Web Services API (v0.4.0)
-- **Próxima fase:** 5 — Extras
+- **Fase concluída:** 4 — Web Services API (v0.4.0, publicada; servidor de atualizações ativo)
+- **Fase em curso:** 5 — Extras.
+  - **Feito:** biblioteca de serviços e import/export, lote, dashboard, `ConsentHelper` + `onLCookiesConsentChange`, `plg_content_lcookies`, `mod_lcookies`, `plg_privacy_lcookies`, README.
+  - **Testes:** admin 89/89, API 42/42, front 83/83 nos 4 sites de teste.
+- **Onde parámos (2026-10-01):**
+  - **Em teste pelo autor:** `dist/pkg_lcookies-0.5.0-dev.zip` num site externo. Começar por recolher o que encontrou.
+  - **A seguir:** `plg_task_lcookies` (purga agendada e scan agendado), depois o scanner, a pré-visualização em tempo real e a validação do pt-PT.
+  - **Fecho da fase:**
+    - subir todas as versões para 0.5.0;
+    - retirar do README a nota "A release publicada é a 0.4.0…";
+    - escrever `docs/fases/fase-5.md` e fazer o commit `chore(release): 0.5.0`;
+    - criar a tag `v0.5.0`.
 
 ## Fluxo de trabalho por fase
 1. Antes de começar: ler `TODO.md` e a nota da fase anterior em `docs/fases/`.
