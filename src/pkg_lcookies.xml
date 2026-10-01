@@ -20,6 +20,7 @@
 		<file type="plugin" id="lcookies" group="system">plg_system_lcookies.zip</file>
 		<file type="plugin" id="lcookies" group="webservices">plg_webservices_lcookies.zip</file>
 		<file type="plugin" id="lcookies" group="content">plg_content_lcookies.zip</file>
+		<file type="module" id="mod_lcookies" client="site">mod_lcookies.zip</file>
 	</files>
 
 	<languages folder="language">

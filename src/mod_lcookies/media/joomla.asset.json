@@ -1,0 +1,17 @@
+{
+  "$schema": "https://developer.joomla.org/schemas/json-schema/web_assets.json",
+  "name": "mod_lcookies",
+  "version": "0.4.0",
+  "description": "LCookies module",
+  "license": "GPL-2.0-or-later",
+  "assets": [
+    {
+      "name": "mod_lcookies.status",
+      "type": "script",
+      "uri": "mod_lcookies/status.min.js",
+      "attributes": {
+        "type": "module"
+      }
+    }
+  ]
+}

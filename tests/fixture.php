@@ -6,7 +6,8 @@
  * Usage:
  *   php tests/fixture.php <joomla root> setup             test services, cookies, a mod_custom with
  *                                                        scripts/iframes, a mod_custom with the shortcodes of
- *                                                        plg_content_lcookies, the files in media/lctest and the
+ *                                                        plg_content_lcookies, a mod_lcookies (status and button),
+ *                                                        the files in media/lctest and the
  *                                                        plugin plg_system_lctest (ConsentHelper answers at
  *                                                        the end of each page, onLCookiesConsentChange log)
  *   php tests/fixture.php <joomla root> events           prints the onLCookiesConsentChange events as JSON
@@ -50,6 +51,7 @@ const SVC_STATS = 9001;
 const SVC_VIDEO = 9002;
 const MODULE    = 9001;
 const MODULE2   = 9002;
+const MODULE3   = 9003;
 const PLUGIN    = 9001;
 const EVENTS    = '/tmp/lctest-events.log';
 
@@ -62,8 +64,8 @@ function teardown(PDO $db, string $p, string $root): void
 {
     run($db, "DELETE FROM {$p}lcookies_cookies WHERE service_id IN (" . SVC_STATS . ',' . SVC_VIDEO . ')');
     run($db, "DELETE FROM {$p}lcookies_services WHERE id IN (" . SVC_STATS . ',' . SVC_VIDEO . ')');
-    run($db, "DELETE FROM {$p}modules_menu WHERE moduleid IN (" . MODULE . ',' . MODULE2 . ')');
-    run($db, "DELETE FROM {$p}modules WHERE id IN (" . MODULE . ',' . MODULE2 . ')');
+    run($db, "DELETE FROM {$p}modules_menu WHERE moduleid IN (" . MODULE . ',' . MODULE2 . ',' . MODULE3 . ')');
+    run($db, "DELETE FROM {$p}modules WHERE id IN (" . MODULE . ',' . MODULE2 . ',' . MODULE3 . ')');
     run($db, "DELETE FROM {$p}lcookies_consents");
 
     foreach (glob($root . '/media/lctest/*') ?: [] as $file) {
@@ -230,6 +232,11 @@ $shortcodes = '<div id="lctest-all"><p>{lcookies-table}</p></div><div id="lctest
 run($db, "INSERT INTO {$p}modules (id, asset_id, title, note, content, ordering, position, publish_up, publish_down, published, module, access, showtitle, params, client_id, language)
     VALUES (?, 0, 'LCookies shortcodes', '', ?, 2, 'sidebar-right', NULL, NULL, 1, 'mod_custom', 1, 0, ?, 0, '*')", [MODULE2, $shortcodes, '{"prepare_content":"1","layout":"_:default","moduleclass_sfx":"","cache":0}']);
 run($db, "INSERT INTO {$p}modules_menu (moduleid, menuid) VALUES (?, 0)", [MODULE2]);
+
+// mod_lcookies with the default options.
+run($db, "INSERT INTO {$p}modules (id, asset_id, title, note, content, ordering, position, publish_up, publish_down, published, module, access, showtitle, params, client_id, language)
+    VALUES (?, 0, 'LCookies module', '', '', 3, 'sidebar-right', NULL, NULL, 1, 'mod_lcookies', 1, 0, '{}', 0, '*')", [MODULE3]);
+run($db, "INSERT INTO {$p}modules_menu (moduleid, menuid) VALUES (?, 0)", [MODULE3]);
 
 @mkdir($root . '/media/lctest');
 file_put_contents($root . '/media/lctest/analytics-test.js', "window.lcTestExternal = (window.lcTestExternal || 0) + 1;\n"

@@ -18,6 +18,19 @@ O plugin *Conteúdo - LCookies* substitui estes códigos em artigos, módulos *P
 - **Nível dos títulos:** define-se nas opções do plugin.
 - **Personalizar o HTML:** override em `templates/<template>/html/layouts/lcookies/policy.php` e `settings.php`.
 
+## Módulo `mod_lcookies`
+
+O módulo *LCookies - Definições de cookies* mostra:
+- o botão que abre as preferências (botão ou link, com texto configurável);
+- a escolha atual do visitante, por exemplo "Permite cookies de Estatísticas e Marketing. Escolha feita a 1 de outubro de 2026.";
+- um link para a página escolhida nas opções do componente.
+
+O texto da escolha é preenchido no browser por `media/mod_lcookies/js/status.js`, a partir de `window.LCookies`. Muda logo que o visitante altera a escolha. O HTML do módulo é igual para todos os visitantes, por isso pode ir para cache.
+
+Para personalizar o HTML, faz-se um override em `templates/<template>/html/mod_lcookies/default.php`. O override tem de manter `data-lcookies-open` e `data-mod-lcookies-status` (com os textos em `data-*`).
+
+O módulo não aparece enquanto o plugin *Sistema - LCookies* estiver desligado.
+
 ## Regra de ouro: cache
 
 A forma mais segura é deixar o código sempre no HTML e deixar o LCookies bloqueá-lo:

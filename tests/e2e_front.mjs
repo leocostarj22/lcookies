@@ -93,6 +93,10 @@ const globals = (page) => page.evaluate(() => ({
 }));
 // What ConsentHelper (PHP) answered when the page was built (plugin plg_system_lctest of tests/fixture.php).
 const helper = (page) => page.evaluate(() => JSON.parse(document.getElementById('lctest-helper').textContent));
+const moduleStatus = (page) => page.evaluate(() => {
+  const el = document.querySelector('.mod-lcookies [data-mod-lcookies-status]');
+  return el && !el.hidden ? el.textContent : null;
+});
 const gcm = (page, kind) => page.evaluate((k) => (window.dataLayer || [])
   .filter((e) => e && e[0] === 'consent' && e[1] === k).map((e) => e[2]), kind);
 
@@ -182,6 +186,17 @@ async function main() {
     check('{lcookies-settings} opens the preferences', await page.evaluate(() => document.querySelector('[data-lcookies-preferences]').open));
     await page.keyboard.press('Escape');
 
+    /* mod_lcookies (module of tests/fixture.php) */
+    console.log('Module');
+    check('module: status without a choice', await moduleStatus(page) === 'You have not chosen which cookies to allow yet.', await moduleStatus(page));
+    check('module: default button text', (await page.textContent('.mod-lcookies [data-lcookies-open]')).trim() === 'Cookie settings');
+    check('module: no policy link without a policy page', await page.locator('.mod-lcookies__policy').count() === 0);
+    violations = await axe(page, '.mod-lcookies');
+    check('axe: module without violations', violations.length === 0, violations.join(', '));
+    await page.click('.mod-lcookies [data-lcookies-open]');
+    check('module button opens the preferences', await page.evaluate(() => document.querySelector('[data-lcookies-preferences]').open));
+    await page.keyboard.press('Escape');
+
     /* 3. Accept all ----------------------------------------------------------------------------- */
     console.log('Accept all');
     await page.evaluate(() => {
@@ -204,6 +219,8 @@ async function main() {
     check('Consent Mode update', updates.length === 1 && updates[0].analytics_storage === 'granted' && updates[0].ad_user_data === 'granted'
       && updates[0].functionality_storage === 'denied', JSON.stringify(updates));
     check('dataLayer event', await page.evaluate(() => window.dataLayer.some((e) => e.event === 'lcookies_consent_update')));
+    check('module: status updated without reload', /^You allow cookies for Statistics and Marketing\. Choice made on \d{1,2} \w+ \d{4}\.$/.test(await moduleStatus(page)),
+      await moduleStatus(page));
     const events = await page.evaluate(() => window.lcEvents);
     check('lcookies:change event', events.length === 1 && events[0].action === 'accept_all' && events[0].granted.join() === 'statistics,marketing', JSON.stringify(events));
     check('banner hidden, floating button visible', !(await page.isVisible('[data-lcookies-banner]')) && await page.isVisible('[data-lcookies-floating]'));
@@ -248,6 +265,8 @@ async function main() {
     await Promise.all([page.waitForEvent('load'), page.evaluate(() => window.LCookies.rejectAll())]);
     await ready(page);
     check('rejectAll(): only necessary', (await consent(page)).cats.join() === 'necessary');
+    check('module: only necessary', (await moduleStatus(page) || '').startsWith('You only allow the strictly necessary cookies. Choice made on'),
+      await moduleStatus(page));
     check('placeholder back after rejecting', await page.isVisible('.lcookies-placeholder[data-lcookies-for="lc1"]'));
     await page.evaluate(() => { window.lcSamePage = true; });
     await page.click('.lcookies-placeholder [data-lcookies-allow="marketing"]');
