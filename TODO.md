@@ -58,7 +58,7 @@ Ao fechar uma fase: marcar tudo, preencher `docs/fases/fase-N.md` e atualizar o 
 
 ## Fase 5 — Extras
 - [x] Biblioteca de presets (13 serviços: GA4, GTM, Google Ads, Meta, LinkedIn, TikTok, Hotjar, Clarity, Matomo, YouTube, Vimeo, Maps, reCAPTCHA) + import/export JSON (mesmo formato; `TransferModel`)
-- [ ] Batch nas listas (mover serviços entre categorias)
+- [x] Batch nas listas (mover serviços entre categorias, diálogo `joomla-dialog-batch` do core)
 - [ ] Scanner (servidor + cliente)
 - [ ] Dashboard com estatísticas
 - [ ] Pré-visualização em tempo real no backend

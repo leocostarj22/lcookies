@@ -128,8 +128,21 @@ abstract class AbstractListView extends BaseHtmlView
                 ->listCheck(true);
         }
 
+        $this->addViewButtons($toolbar);
+
         if ($canDo->get('core.admin') || $canDo->get('core.options')) {
             $toolbar->preferences('com_lcookies');
         }
+    }
+
+    /**
+     * Buttons of a particular list, placed before Options.
+     *
+     * @param   \Joomla\CMS\Toolbar\Toolbar  $toolbar  The toolbar.
+     *
+     * @return  void
+     */
+    protected function addViewButtons($toolbar): void
+    {
     }
 }

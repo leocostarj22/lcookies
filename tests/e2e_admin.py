@@ -72,7 +72,7 @@ def token(html):
 
 
 def check(name, cond, extra=""):
-    print(("PASS " if cond else "FAIL ") + name + ("" if cond else "  -> " + extra))
+    print(("PASS " if cond else "FAIL ") + name + ("" if cond else "  -> " + str(extra)))
     if not cond:
         fails.append(name)
 
@@ -229,6 +229,19 @@ check("ajax reorder", row.startswith("preferences,necessary"), row)
 # Direct access to edit layout without checkout is refused
 html = req("?option=com_lcookies&view=service&layout=edit&id=1")
 check("direct edit access refused", "You are not permitted to use that link" in html or "JLIB_APPLICATION_ERROR_UNHELD_ID" not in html and 'id="service-form"' not in html)
+
+# Batch: move services to another category -----------------------------------------------------------
+html = req("?option=com_lcookies&view=services")
+check("batch dialog in the services list", 'id="joomla-dialog-batch"' in html and 'name="batch[service_category_id]"' in html)
+before = sql("SELECT category_id, ordering FROM jos_lcookies_services WHERE id = 1")
+html = req("?option=com_lcookies&view=services", {"task": "service.batch", "cid[]": ["1"], "batch[service_category_id]": "3", token(html): "1"})
+row = sql("SELECT category_id FROM jos_lcookies_services WHERE id = 1")
+check("batch moves the service", row == "3" and "Batch process completed" in html, (row, str(messages(html))[:200]))
+html = req("?option=com_lcookies&view=services", {"task": "service.batch", "cid[]": ["1"], "batch[service_category_id]": "99999", token(html): "1"})
+check("batch to an unknown category refused", sql("SELECT category_id FROM jos_lcookies_services WHERE id = 1") == "3")
+html = req("?option=com_lcookies&view=services", {"task": "service.batch", "cid[]": ["1"], "batch[service_category_id]": "1", token(html): "1"})
+check("batch moves it back", sql("SELECT category_id FROM jos_lcookies_services WHERE id = 1") == "1")
+clean(html, "services after batch")
 
 # Service library, export and import ---------------------------------------------------------------
 def upload(path, fields, filename, content):

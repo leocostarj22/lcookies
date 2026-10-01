@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form addfieldprefix="Lcsilva\Component\Lcookies\Administrator\Field">
+	<fields name="batch">
+		<field
+			name="service_category_id"
+			type="lcookiescategory"
+			label="COM_LCOOKIES_BATCH_CATEGORY_LABEL"
+			description="COM_LCOOKIES_BATCH_CATEGORY_DESC"
+			>
+			<option value="">COM_LCOOKIES_BATCH_CATEGORY_KEEP</option>
+		</field>
+	</fields>
+</form>
