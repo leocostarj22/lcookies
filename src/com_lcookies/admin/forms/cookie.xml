@@ -92,6 +92,8 @@
 			>
 			<option value="manual">COM_LCOOKIES_SOURCE_MANUAL</option>
 			<option value="scanner">COM_LCOOKIES_SOURCE_SCANNER</option>
+			<option value="preset">COM_LCOOKIES_SOURCE_PRESET</option>
+			<option value="import">COM_LCOOKIES_SOURCE_IMPORT</option>
 		</field>
 		<field
 			name="state"

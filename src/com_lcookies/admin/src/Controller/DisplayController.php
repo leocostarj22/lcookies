@@ -12,6 +12,7 @@ namespace Lcsilva\Component\Lcookies\Administrator\Controller;
 
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Controller\BaseController;
+use Joomla\CMS\MVC\View\ViewInterface;
 use Joomla\CMS\Router\Route;
 
 // phpcs:disable PSR1.Files.SideEffects
@@ -62,5 +63,23 @@ class DisplayController extends BaseController
         }
 
         return parent::display($cachable, $urlparams);
+    }
+
+    /**
+     * The library page (presets) uses the transfer model.
+     *
+     * @param   ViewInterface  $view  The view.
+     *
+     * @return  void
+     */
+    protected function prepareViewModel(ViewInterface $view)
+    {
+        if ($view->getName() === 'presets') {
+            $view->setModel($this->getModel('Transfer', 'Administrator'), true);
+
+            return;
+        }
+
+        parent::prepareViewModel($view);
     }
 }

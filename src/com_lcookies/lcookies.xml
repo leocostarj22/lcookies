@@ -47,6 +47,7 @@
 			<menu link="option=com_lcookies&amp;view=categories" view="categories" alt="LCookies/Categories">com_lcookies_menu_categories</menu>
 			<menu link="option=com_lcookies&amp;view=services" view="services" alt="LCookies/Services">com_lcookies_menu_services</menu>
 			<menu link="option=com_lcookies&amp;view=cookies" view="cookies" alt="LCookies/Cookies">com_lcookies_menu_cookies</menu>
+			<menu link="option=com_lcookies&amp;view=presets" view="presets" alt="LCookies/Library">com_lcookies_menu_presets</menu>
 			<menu link="option=com_lcookies&amp;view=consents" view="consents" alt="LCookies/Consents">com_lcookies_menu_consents</menu>
 		</submenu>
 		<files folder="admin">
@@ -54,6 +55,7 @@
 			<filename>config.xml</filename>
 			<folder>forms</folder>
 			<folder>language</folder>
+			<folder>presets</folder>
 			<folder>services</folder>
 			<folder>sql</folder>
 			<folder>src</folder>

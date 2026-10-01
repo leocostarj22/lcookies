@@ -230,6 +230,77 @@ check("ajax reorder", row.startswith("preferences,necessary"), row)
 html = req("?option=com_lcookies&view=service&layout=edit&id=1")
 check("direct edit access refused", "You are not permitted to use that link" in html or "JLIB_APPLICATION_ERROR_UNHELD_ID" not in html and 'id="service-form"' not in html)
 
+# Service library, export and import ---------------------------------------------------------------
+def upload(path, fields, filename, content):
+    boundary = "----lcookies" + str(abs(hash(content)))
+    body = b""
+    for k, v in fields.items():
+        body += f'--{boundary}\r\nContent-Disposition: form-data; name="{k}"\r\n\r\n{v}\r\n'.encode()
+    body += (f'--{boundary}\r\nContent-Disposition: form-data; name="import_file"; filename="{filename}"\r\n'
+             f'Content-Type: application/json\r\n\r\n').encode() + content + f"\r\n--{boundary}--\r\n".encode()
+    request = urllib.request.Request(BASE + "/administrator/index.php" + path, body, {"Content-Type": f"multipart/form-data; boundary={boundary}"})
+    with op.open(request) as r:
+        return r.read().decode("utf-8", "replace")
+
+
+html = req("?option=com_lcookies&view=presets")
+check("library renders", "Google Analytics 4" in html and "Microsoft Clarity" in html and 'value="google-analytics"' in html, html[:300])
+clean(html, "library")
+html = req("?option=com_lcookies&view=services")
+check("services toolbar links to the library", "view=presets" in html)
+html = req("?option=com_lcookies&view=presets")
+html = req("?option=com_lcookies&view=presets", {"task": "transfer.preset", "preset": "google-analytics", token(html): "1"})
+row = sql("SELECT s.block_patterns, c.alias, (SELECT COUNT(*) FROM jos_lcookies_cookies k WHERE k.service_id = s.id AND k.source = 'preset') "
+          "FROM jos_lcookies_services s JOIN jos_lcookies_categories c ON c.id = s.category_id WHERE s.alias = 'google-analytics'")
+check("preset added with patterns, category and cookies", row == "googletagmanager.com/gtag/js\\ngoogle-analytics.com\tstatistics\t2", row)
+check("library shows it as added", "Services: 1 added" in html and 'value="google-analytics"' not in html, str(messages(html))[:300])
+html = req("?option=com_lcookies&view=presets", {"task": "transfer.preset", "preset": "google-analytics", token(html): "1"})
+check("adding it again skips it", "Services: 0 added, 0 updated, 1 skipped" in html and sql("SELECT COUNT(*) FROM jos_lcookies_services WHERE alias = 'google-analytics'") == "1")
+
+tok = token(html)
+exported = json.loads(req(f"?option=com_lcookies&task=transfer.export&{tok}=1"))
+ga = [x for x in exported.get("services", []) if x["alias"] == "google-analytics"]
+check("export: format, categories, services with cookies", exported.get("format") == "lcookies" and exported.get("version") == 1
+      and any(c["alias"] == "necessary" for c in exported["categories"]) and ga and len(ga[0]["cookies"]) == 2, str(exported)[:300])
+
+ga[0]["title"] = "GA renamed"
+ga[0]["cookies"] = ga[0]["cookies"][:1]
+data = {"format": "lcookies", "version": 1,
+        "categories": [{"alias": "lcimport-cat", "title": "Imported category", "gcm_types": ["ad_storage", "bogus"]},
+                       {"alias": "necessary", "title": "Hacked", "required": 0, "state": 0}],
+        "services": [ga[0],
+                     {"alias": "lcimport-svc", "category": "lcimport-cat", "title": "Imported service", "block_patterns": ["lcimport.js"],
+                      "cookies": [{"name": "_lcimp", "duration_value": 1, "duration_unit": "year"}, {"name": "bad[", "match_type": "regex"}]},
+                     {"alias": "lcimport-orphan", "category": "does-not-exist", "title": "Orphan service"}]}
+payload = json.dumps(data).encode()
+html = upload("?option=com_lcookies&view=presets", {"task": "transfer.import", token(html): "1"}, "lcookies.json", payload)
+check("import adds new items, skips existing ones", "Categories: 1 added, 0 updated, 1 skipped. Services: 2 added, 0 updated, 1 skipped. Cookies added: 1." in html,
+      str(messages(html))[:400])
+check("import reports invalid cookies", "bad[" in html and "regular expression" in html.lower())
+row = sql("SELECT c.gcm_types FROM jos_lcookies_categories c WHERE c.alias = 'lcimport-cat'")
+check("imported category keeps only known Consent Mode types", row == '["ad_storage"]', row)
+row = sql("SELECT c.alias FROM jos_lcookies_services s JOIN jos_lcookies_categories c ON c.id = s.category_id WHERE s.alias = 'lcimport-orphan'")
+check("unknown category -> unclassified", row == "unclassified", row)
+html = req("?option=com_lcookies&view=presets")
+html = upload("?option=com_lcookies&view=presets", {"task": "transfer.import", "overwrite": "1", token(html): "1"}, "lcookies.json", payload)
+row = sql("SELECT s.title, (SELECT COUNT(*) FROM jos_lcookies_cookies k WHERE k.service_id = s.id) FROM jos_lcookies_services s WHERE s.alias = 'google-analytics'")
+check("overwrite updates the service and replaces its cookies", row == "GA renamed\t1", row)
+row = sql("SELECT alias, title, required, state, gcm_types FROM jos_lcookies_categories WHERE id = 1")
+check("core category stays locked on import", row.startswith("necessary\tHacked\t1\t1"), row)
+check("update keeps fields missing from the file", row.endswith('["security_storage"]'), row)
+html = req("?option=com_lcookies&view=presets")
+html = upload("?option=com_lcookies&view=presets", {"task": "transfer.import", token(html): "1"}, "x.json", b'{"hello": 1}')
+check("invalid file refused", "not an LCookies export" in html, str(messages(html))[:300])
+html = req("?option=com_lcookies&view=presets")
+clean(html, "library after import")
+
+# Leave the default data for the other tests (e2e_api.py, e2e_front.mjs).
+sql("DELETE FROM jos_lcookies_cookies WHERE service_id IN (SELECT id FROM jos_lcookies_services WHERE alias IN "
+    "('google-analytics', 'lcimport-svc', 'lcimport-orphan'))")
+sql("DELETE FROM jos_lcookies_services WHERE alias IN ('google-analytics', 'lcimport-svc', 'lcimport-orphan')")
+sql("DELETE FROM jos_lcookies_categories WHERE alias = 'lcimport-cat'")
+sql("UPDATE jos_lcookies_categories SET title = 'COM_LCOOKIES_CAT_NECESSARY', description = 'COM_LCOOKIES_CAT_NECESSARY_DESC' WHERE id = 1")
+
 # Consent records ----------------------------------------------------------------------------------
 U1, U2 = "11111111-2222-4333-8444-555555555555", "aaaaaaaa-bbbb-4ccc-9ddd-eeeeeeeeeeee"
 codes = [site_consent(U1, ["necessary", "statistics"], "custom", "/index.php?email=x@y.z"),

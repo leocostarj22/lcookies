@@ -11,7 +11,6 @@
 namespace Lcsilva\Component\Lcookies\Administrator\Table;
 
 use Joomla\CMS\Application\ApplicationHelper;
-use Joomla\CMS\Language\Text;
 use Joomla\Database\DatabaseInterface;
 use Joomla\Event\DispatcherInterface;
 use Lcsilva\Component\Lcookies\Administrator\Helper\LcookiesHelper;
@@ -79,9 +78,7 @@ class ServiceTable extends AbstractLcookiesTable
         foreach ($patterns as $pattern) {
             if (\strlen($pattern) > 2 && $pattern[0] === '/' && substr($pattern, -1) === '/'
                 && !LcookiesHelper::isValidRegex(substr($pattern, 1, -1))) {
-                $this->setError(Text::sprintf('COM_LCOOKIES_ERROR_INVALID_PATTERN', $pattern));
-
-                return false;
+                return $this->fail('COM_LCOOKIES_ERROR_INVALID_PATTERN', $pattern);
             }
         }
 

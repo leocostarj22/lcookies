@@ -35,6 +35,13 @@ abstract class AbstractLcookiesTable extends Table
     protected $_supportNullValue = true;
 
     /**
+     * Reason of the last failed check().
+     *
+     * @var  string
+     */
+    private string $failure = '';
+
+    /**
      * @param   string                    $tableName   Table name.
      * @param   DatabaseInterface         $db          Database connector object.
      * @param   ?DispatcherInterface      $dispatcher  Event dispatcher for this table.
@@ -53,10 +60,13 @@ abstract class AbstractLcookiesTable extends Table
      */
     public function check()
     {
+        $this->failure = '';
+
         try {
             parent::check();
         } catch (\Exception $e) {
-            $this->setError($e->getMessage());
+            $this->failure = $e->getMessage();
+            $this->setError($this->failure);
 
             return false;
         }
@@ -147,10 +157,23 @@ abstract class AbstractLcookiesTable extends Table
      *
      * @return  false
      */
-    protected function fail(string $key): bool
+    protected function fail(string $key, string ...$args): bool
     {
-        $this->setError(Text::_($key));
+        $this->failure = $args ? Text::sprintf($key, ...$args) : Text::_($key);
+
+        // The core AdminModel still reads the reason with getError().
+        $this->setError($this->failure);
 
         return false;
+    }
+
+    /**
+     * Reason of the last failed check(), empty if none.
+     *
+     * @return  string
+     */
+    public function getFailure(): string
+    {
+        return $this->failure;
     }
 }

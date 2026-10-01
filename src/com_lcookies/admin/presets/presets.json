@@ -1,0 +1,483 @@
+{
+  "format": "lcookies",
+  "version": 1,
+  "services": [
+    {
+      "alias": "google-analytics",
+      "category": "statistics",
+      "title": "Google Analytics 4",
+      "provider": "Google Ireland Ltd.",
+      "privacy_url": "https://policies.google.com/privacy",
+      "description": "COM_LCOOKIES_PRESET_GOOGLE_ANALYTICS_DESC",
+      "block_patterns": [
+        "googletagmanager.com/gtag/js",
+        "google-analytics.com"
+      ],
+      "head_code": "",
+      "body_code": "",
+      "state": 1,
+      "cookies": [
+        {
+          "name": "_ga",
+          "match_type": "exact",
+          "type": "cookie",
+          "domain": "",
+          "duration_value": 2,
+          "duration_unit": "year",
+          "description": "COM_LCOOKIES_PRESET_COOKIE_USER_ID",
+          "state": 1
+        },
+        {
+          "name": "_ga_",
+          "match_type": "prefix",
+          "type": "cookie",
+          "domain": "",
+          "duration_value": 2,
+          "duration_unit": "year",
+          "description": "COM_LCOOKIES_PRESET_COOKIE_SESSION",
+          "state": 1
+        }
+      ]
+    },
+    {
+      "alias": "google-tag-manager",
+      "category": "statistics",
+      "title": "Google Tag Manager",
+      "provider": "Google Ireland Ltd.",
+      "privacy_url": "https://policies.google.com/privacy",
+      "description": "COM_LCOOKIES_PRESET_GOOGLE_TAG_MANAGER_DESC",
+      "block_patterns": [
+        "googletagmanager.com/gtm.js",
+        "googletagmanager.com/ns.html"
+      ],
+      "head_code": "",
+      "body_code": "",
+      "state": 1,
+      "cookies": []
+    },
+    {
+      "alias": "google-ads",
+      "category": "marketing",
+      "title": "Google Ads",
+      "provider": "Google Ireland Ltd.",
+      "privacy_url": "https://policies.google.com/privacy",
+      "description": "COM_LCOOKIES_PRESET_GOOGLE_ADS_DESC",
+      "block_patterns": [
+        "googleadservices.com",
+        "googlesyndication.com",
+        "doubleclick.net"
+      ],
+      "head_code": "",
+      "body_code": "",
+      "state": 1,
+      "cookies": [
+        {
+          "name": "_gcl_au",
+          "match_type": "exact",
+          "type": "cookie",
+          "domain": "",
+          "duration_value": 3,
+          "duration_unit": "month",
+          "description": "COM_LCOOKIES_PRESET_COOKIE_ADS",
+          "state": 1
+        },
+        {
+          "name": "IDE",
+          "match_type": "exact",
+          "type": "cookie",
+          "domain": ".doubleclick.net",
+          "duration_value": 13,
+          "duration_unit": "month",
+          "description": "COM_LCOOKIES_PRESET_COOKIE_ADS",
+          "state": 1
+        },
+        {
+          "name": "test_cookie",
+          "match_type": "exact",
+          "type": "cookie",
+          "domain": ".doubleclick.net",
+          "duration_value": 15,
+          "duration_unit": "minute",
+          "description": "COM_LCOOKIES_PRESET_COOKIE_TEST",
+          "state": 1
+        }
+      ]
+    },
+    {
+      "alias": "meta-pixel",
+      "category": "marketing",
+      "title": "Meta Pixel",
+      "provider": "Meta Platforms Ireland Ltd.",
+      "privacy_url": "https://www.facebook.com/privacy/policy/",
+      "description": "COM_LCOOKIES_PRESET_META_PIXEL_DESC",
+      "block_patterns": [
+        "connect.facebook.net",
+        "facebook.com/tr"
+      ],
+      "head_code": "",
+      "body_code": "",
+      "state": 1,
+      "cookies": [
+        {
+          "name": "_fbp",
+          "match_type": "exact",
+          "type": "cookie",
+          "domain": "",
+          "duration_value": 3,
+          "duration_unit": "month",
+          "description": "COM_LCOOKIES_PRESET_COOKIE_ADS",
+          "state": 1
+        },
+        {
+          "name": "fr",
+          "match_type": "exact",
+          "type": "cookie",
+          "domain": ".facebook.com",
+          "duration_value": 3,
+          "duration_unit": "month",
+          "description": "COM_LCOOKIES_PRESET_COOKIE_ADS",
+          "state": 1
+        }
+      ]
+    },
+    {
+      "alias": "linkedin-insight",
+      "category": "marketing",
+      "title": "LinkedIn Insight Tag",
+      "provider": "LinkedIn Ireland Unlimited Company",
+      "privacy_url": "https://www.linkedin.com/legal/privacy-policy",
+      "description": "COM_LCOOKIES_PRESET_LINKEDIN_INSIGHT_DESC",
+      "block_patterns": [
+        "snap.licdn.com",
+        "px.ads.linkedin.com"
+      ],
+      "head_code": "",
+      "body_code": "",
+      "state": 1,
+      "cookies": [
+        {
+          "name": "bcookie",
+          "match_type": "exact",
+          "type": "cookie",
+          "domain": ".linkedin.com",
+          "duration_value": 1,
+          "duration_unit": "year",
+          "description": "COM_LCOOKIES_PRESET_COOKIE_USER_ID",
+          "state": 1
+        },
+        {
+          "name": "lidc",
+          "match_type": "exact",
+          "type": "cookie",
+          "domain": ".linkedin.com",
+          "duration_value": 1,
+          "duration_unit": "day",
+          "description": "COM_LCOOKIES_PRESET_COOKIE_ROUTING",
+          "state": 1
+        },
+        {
+          "name": "UserMatchHistory",
+          "match_type": "exact",
+          "type": "cookie",
+          "domain": ".linkedin.com",
+          "duration_value": 30,
+          "duration_unit": "day",
+          "description": "COM_LCOOKIES_PRESET_COOKIE_ADS",
+          "state": 1
+        },
+        {
+          "name": "AnalyticsSyncHistory",
+          "match_type": "exact",
+          "type": "cookie",
+          "domain": ".linkedin.com",
+          "duration_value": 30,
+          "duration_unit": "day",
+          "description": "COM_LCOOKIES_PRESET_COOKIE_ADS",
+          "state": 1
+        }
+      ]
+    },
+    {
+      "alias": "tiktok-pixel",
+      "category": "marketing",
+      "title": "TikTok Pixel",
+      "provider": "TikTok Technology Limited",
+      "privacy_url": "https://www.tiktok.com/legal/privacy-policy-eea",
+      "description": "COM_LCOOKIES_PRESET_TIKTOK_PIXEL_DESC",
+      "block_patterns": [
+        "analytics.tiktok.com"
+      ],
+      "head_code": "",
+      "body_code": "",
+      "state": 1,
+      "cookies": [
+        {
+          "name": "_ttp",
+          "match_type": "exact",
+          "type": "cookie",
+          "domain": "",
+          "duration_value": 13,
+          "duration_unit": "month",
+          "description": "COM_LCOOKIES_PRESET_COOKIE_ADS",
+          "state": 1
+        }
+      ]
+    },
+    {
+      "alias": "hotjar",
+      "category": "statistics",
+      "title": "Hotjar",
+      "provider": "Hotjar Ltd.",
+      "privacy_url": "https://www.hotjar.com/legal/policies/privacy/",
+      "description": "COM_LCOOKIES_PRESET_HOTJAR_DESC",
+      "block_patterns": [
+        "static.hotjar.com",
+        "script.hotjar.com"
+      ],
+      "head_code": "",
+      "body_code": "",
+      "state": 1,
+      "cookies": [
+        {
+          "name": "_hjSessionUser_",
+          "match_type": "prefix",
+          "type": "cookie",
+          "domain": "",
+          "duration_value": 1,
+          "duration_unit": "year",
+          "description": "COM_LCOOKIES_PRESET_COOKIE_USER_ID",
+          "state": 1
+        },
+        {
+          "name": "_hjSession_",
+          "match_type": "prefix",
+          "type": "cookie",
+          "domain": "",
+          "duration_value": 30,
+          "duration_unit": "minute",
+          "description": "COM_LCOOKIES_PRESET_COOKIE_SESSION",
+          "state": 1
+        }
+      ]
+    },
+    {
+      "alias": "microsoft-clarity",
+      "category": "statistics",
+      "title": "Microsoft Clarity",
+      "provider": "Microsoft Ireland Operations Ltd.",
+      "privacy_url": "https://privacy.microsoft.com/privacystatement",
+      "description": "COM_LCOOKIES_PRESET_MICROSOFT_CLARITY_DESC",
+      "block_patterns": [
+        "clarity.ms"
+      ],
+      "head_code": "",
+      "body_code": "",
+      "state": 1,
+      "cookies": [
+        {
+          "name": "_clck",
+          "match_type": "exact",
+          "type": "cookie",
+          "domain": "",
+          "duration_value": 1,
+          "duration_unit": "year",
+          "description": "COM_LCOOKIES_PRESET_COOKIE_USER_ID",
+          "state": 1
+        },
+        {
+          "name": "_clsk",
+          "match_type": "exact",
+          "type": "cookie",
+          "domain": "",
+          "duration_value": 1,
+          "duration_unit": "day",
+          "description": "COM_LCOOKIES_PRESET_COOKIE_SESSION",
+          "state": 1
+        },
+        {
+          "name": "CLID",
+          "match_type": "exact",
+          "type": "cookie",
+          "domain": ".clarity.ms",
+          "duration_value": 1,
+          "duration_unit": "year",
+          "description": "COM_LCOOKIES_PRESET_COOKIE_USER_ID",
+          "state": 1
+        },
+        {
+          "name": "MUID",
+          "match_type": "exact",
+          "type": "cookie",
+          "domain": ".clarity.ms",
+          "duration_value": 1,
+          "duration_unit": "year",
+          "description": "COM_LCOOKIES_PRESET_COOKIE_USER_ID",
+          "state": 1
+        }
+      ]
+    },
+    {
+      "alias": "matomo",
+      "category": "statistics",
+      "title": "Matomo",
+      "provider": "",
+      "privacy_url": "",
+      "description": "COM_LCOOKIES_PRESET_MATOMO_DESC",
+      "block_patterns": [
+        "matomo.js",
+        "piwik.js"
+      ],
+      "head_code": "",
+      "body_code": "",
+      "state": 1,
+      "cookies": [
+        {
+          "name": "_pk_id.",
+          "match_type": "prefix",
+          "type": "cookie",
+          "domain": "",
+          "duration_value": 13,
+          "duration_unit": "month",
+          "description": "COM_LCOOKIES_PRESET_COOKIE_USER_ID",
+          "state": 1
+        },
+        {
+          "name": "_pk_ses.",
+          "match_type": "prefix",
+          "type": "cookie",
+          "domain": "",
+          "duration_value": 30,
+          "duration_unit": "minute",
+          "description": "COM_LCOOKIES_PRESET_COOKIE_SESSION",
+          "state": 1
+        }
+      ]
+    },
+    {
+      "alias": "youtube",
+      "category": "marketing",
+      "title": "YouTube",
+      "provider": "Google Ireland Ltd.",
+      "privacy_url": "https://policies.google.com/privacy",
+      "description": "COM_LCOOKIES_PRESET_YOUTUBE_DESC",
+      "block_patterns": [
+        "youtube.com/embed",
+        "youtube-nocookie.com/embed",
+        "youtube.com/iframe_api"
+      ],
+      "head_code": "",
+      "body_code": "",
+      "state": 1,
+      "cookies": [
+        {
+          "name": "YSC",
+          "match_type": "exact",
+          "type": "cookie",
+          "domain": ".youtube.com",
+          "duration_value": 0,
+          "duration_unit": "session",
+          "description": "COM_LCOOKIES_PRESET_COOKIE_VIDEO",
+          "state": 1
+        },
+        {
+          "name": "VISITOR_INFO1_LIVE",
+          "match_type": "exact",
+          "type": "cookie",
+          "domain": ".youtube.com",
+          "duration_value": 6,
+          "duration_unit": "month",
+          "description": "COM_LCOOKIES_PRESET_COOKIE_VIDEO",
+          "state": 1
+        },
+        {
+          "name": "yt-remote-",
+          "match_type": "prefix",
+          "type": "local",
+          "domain": "",
+          "duration_value": 0,
+          "duration_unit": "session",
+          "description": "COM_LCOOKIES_PRESET_COOKIE_VIDEO",
+          "state": 1
+        }
+      ]
+    },
+    {
+      "alias": "vimeo",
+      "category": "marketing",
+      "title": "Vimeo",
+      "provider": "Vimeo.com, Inc.",
+      "privacy_url": "https://vimeo.com/privacy",
+      "description": "COM_LCOOKIES_PRESET_VIMEO_DESC",
+      "block_patterns": [
+        "player.vimeo.com"
+      ],
+      "head_code": "",
+      "body_code": "",
+      "state": 1,
+      "cookies": [
+        {
+          "name": "vuid",
+          "match_type": "exact",
+          "type": "cookie",
+          "domain": ".vimeo.com",
+          "duration_value": 2,
+          "duration_unit": "year",
+          "description": "COM_LCOOKIES_PRESET_COOKIE_VIDEO",
+          "state": 1
+        }
+      ]
+    },
+    {
+      "alias": "google-maps",
+      "category": "marketing",
+      "title": "Google Maps",
+      "provider": "Google Ireland Ltd.",
+      "privacy_url": "https://policies.google.com/privacy",
+      "description": "COM_LCOOKIES_PRESET_GOOGLE_MAPS_DESC",
+      "block_patterns": [
+        "google.com/maps/embed",
+        "maps.googleapis.com",
+        "maps.google."
+      ],
+      "head_code": "",
+      "body_code": "",
+      "state": 1,
+      "cookies": [
+        {
+          "name": "NID",
+          "match_type": "exact",
+          "type": "cookie",
+          "domain": ".google.com",
+          "duration_value": 6,
+          "duration_unit": "month",
+          "description": "COM_LCOOKIES_PRESET_COOKIE_GOOGLE",
+          "state": 1
+        }
+      ]
+    },
+    {
+      "alias": "google-recaptcha",
+      "category": "necessary",
+      "title": "Google reCAPTCHA",
+      "provider": "Google Ireland Ltd.",
+      "privacy_url": "https://policies.google.com/privacy",
+      "description": "COM_LCOOKIES_PRESET_GOOGLE_RECAPTCHA_DESC",
+      "block_patterns": [],
+      "head_code": "",
+      "body_code": "",
+      "state": 1,
+      "cookies": [
+        {
+          "name": "_GRECAPTCHA",
+          "match_type": "exact",
+          "type": "cookie",
+          "domain": "www.google.com",
+          "duration_value": 6,
+          "duration_unit": "month",
+          "description": "COM_LCOOKIES_PRESET_COOKIE_CAPTCHA",
+          "state": 1
+        }
+      ]
+    }
+  ]
+}

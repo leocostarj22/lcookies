@@ -57,7 +57,7 @@ Ao fechar uma fase: marcar tudo, preencher `docs/fases/fase-N.md` e atualizar o 
 - [x] Teste `tests/e2e_api.py`
 
 ## Fase 5 — Extras
-- [ ] Biblioteca de presets + import/export JSON
+- [x] Biblioteca de presets (13 serviços: GA4, GTM, Google Ads, Meta, LinkedIn, TikTok, Hotjar, Clarity, Matomo, YouTube, Vimeo, Maps, reCAPTCHA) + import/export JSON (mesmo formato; `TransferModel`)
 - [ ] Batch nas listas (mover serviços entre categorias)
 - [ ] Scanner (servidor + cliente)
 - [ ] Dashboard com estatísticas

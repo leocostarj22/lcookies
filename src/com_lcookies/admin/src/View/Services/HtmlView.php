@@ -10,6 +10,7 @@
 
 namespace Lcsilva\Component\Lcookies\Administrator\View\Services;
 
+use Joomla\CMS\Router\Route;
 use Lcsilva\Component\Lcookies\Administrator\View\AbstractListView;
 
 // phpcs:disable PSR1.Files.SideEffects
@@ -30,4 +31,18 @@ class HtmlView extends AbstractListView
      * @var  string[]
      */
     protected $title = ['COM_LCOOKIES_SERVICES_TITLE', 'shield-alt'];
+
+    /**
+     * Adds the link to the service library (presets, import and export).
+     *
+     * @return  void
+     */
+    protected function addToolbar(): void
+    {
+        parent::addToolbar();
+
+        $this->getDocument()->getToolbar()->linkButton('puzzle-piece', 'COM_LCOOKIES_PRESETS_BUTTON')
+            ->url(Route::_('index.php?option=com_lcookies&view=presets', false))
+            ->icon('icon-puzzle-piece');
+    }
 }
