@@ -9,7 +9,7 @@
  * Events on document: `lcookies:ready` and `lcookies:change` (detail: {action, consent, granted, revoked}).
  * Any element with data-lcookies-open, or a link to #lcookies-settings, opens the preferences.
  *
- * @copyright  (C) 2026 Lcsilva
+ * @copyright  (C) 2026 leocostadeveloper
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 

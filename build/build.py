@@ -85,8 +85,8 @@ def update_files(version: str, package: Path) -> None:
 \t\t<tags>
 \t\t\t<tag>{stability}</tag>
 \t\t</tags>
-\t\t<maintainer>Lcsilva</maintainer>
-\t\t<maintainerurl>https://github.com/{REPOSITORY}</maintainerurl>
+\t\t<maintainer>leocostadeveloper</maintainer>
+\t\t<maintainerurl>https://www.leocostadeveloper.com</maintainerurl>
 \t\t<targetplatform name="joomla" version="{TARGET_PLATFORM}"/>
 \t\t<php_minimum>{PHP_MINIMUM}</php_minimum>
 \t</update>

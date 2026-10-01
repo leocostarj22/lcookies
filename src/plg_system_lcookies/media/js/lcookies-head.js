@@ -11,7 +11,7 @@
  * that other scripts create later blocked until their category is accepted. It defines
  * window.LCookies with hasConsent()/getConsent(); lcookies.js adds the rest of the API.
  *
- * @copyright  (C) 2026 Lcsilva
+ * @copyright  (C) 2026 leocostadeveloper
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 (function (w, d) {

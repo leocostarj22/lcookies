@@ -23,7 +23,7 @@ Testes (só em sites de teste, alteram dados): `tests/e2e_admin.py`, `tests/e2e_
 ## Publicar uma versão
 
 1. Subir `<version>` em `src/pkg_lcookies.xml` (e nos manifests das extensões alteradas; mudança de schema → novo `sql/updates/{mysql,postgresql}/<versão>.sql`).
-2. Fazer commit, criar a tag e enviá-la:
+2. Fazer commit (mensagens no formato [Conventional Commits](https://www.conventionalcommits.org/), ex. `chore(release): 0.5.0`), criar a tag e enviá-la:
    ```bash
    git tag v0.5.0 && git push origin main v0.5.0
    ```
@@ -39,6 +39,13 @@ O servidor de atualizações do Joomla é `https://github.com/leocostarj22/lcook
 - o ficheiro indica a versão, o link do zip e o `sha512`, que o Joomla confirma antes de instalar.
 
 O repositório tem de ser público.
+
+## Autor
+
+Desenvolvido por **leocostadeveloper**:
+- site: [www.leocostadeveloper.com](https://www.leocostadeveloper.com);
+- LinkedIn: [@leocostadeveloper](https://www.linkedin.com/in/leocostadeveloper);
+- GitHub: [@leocostarj22](https://github.com/leocostarj22).
 
 ## Licença
 

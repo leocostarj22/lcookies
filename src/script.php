@@ -3,7 +3,7 @@
 /**
  * @package     Lcsilva.LCookies
  *
- * @copyright   (C) 2026 Lcsilva
+ * @copyright   (C) 2026 leocostadeveloper
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
