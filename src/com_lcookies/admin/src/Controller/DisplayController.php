@@ -27,7 +27,7 @@ class DisplayController extends BaseController
     /**
      * @var    string
      */
-    protected $default_view = 'categories';
+    protected $default_view = 'dashboard';
 
     /**
      * Edit views and the list each one returns to.

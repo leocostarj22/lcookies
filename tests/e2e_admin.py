@@ -363,6 +363,26 @@ html = req("?option=com_lcookies&view=consents")
 html = req("?option=com_lcookies&view=consents", {"task": "consents.purge", token(html): "1"})
 check("purge deletes only expired", sql("SELECT COUNT(*) FROM jos_lcookies_consents") == "3" and "1 expired record deleted" in html, str(messages(html)))
 
+# Dashboard ----------------------------------------------------------------------------------------
+html = req("?option=com_lcookies")
+check("dashboard is the default view", 'id="lcookies-dashboard"' in html, html[:300])
+clean(html, "dashboard")
+check("dashboard totals", "3 choices from 2 visitors" in html, re.findall(r"\d+ choices from \d+ visitors", html))
+rates = dict(re.findall(r'data-lcookies-rate="([a-z]+)">.*?<span>(\d+)%</span>', html, re.S))
+check("dashboard acceptance by category", rates == {"preferences": "33", "statistics": "67", "marketing": "33", "unclassified": "0"}, str(rates))
+check("dashboard alert: no privacy page", 'data-lcookies-alert="no_privacy_page"' in html)
+check("dashboard: no plugin/unclassified alerts by default",
+      re.findall(r'data-lcookies-alert="(\w+)"', html) == ["no_privacy_page"], re.findall(r'data-lcookies-alert="(\w+)"', html))
+sql("UPDATE jos_extensions SET enabled = 0 WHERE type = 'plugin' AND folder = 'system' AND element = 'lcookies'")
+sql("INSERT INTO jos_lcookies_services (category_id, alias, title, provider, description, block_patterns, state, ordering, created, modified) "
+    "SELECT id, 'lcdash-svc', 'Dash', '', '', NULL, 1, 99, NOW(), NOW() FROM jos_lcookies_categories WHERE alias = 'unclassified'")
+html = req("?option=com_lcookies&view=dashboard")
+check("dashboard alerts: plugin disabled, unclassified, not blocked",
+      all(f'data-lcookies-alert="{a}"' in html for a in ["plugin_disabled", "unclassified", "not_blocked"]),
+      re.findall(r'data-lcookies-alert="(\w+)"', html))
+sql("UPDATE jos_extensions SET enabled = 1 WHERE type = 'plugin' AND folder = 'system' AND element = 'lcookies'")
+sql("DELETE FROM jos_lcookies_services WHERE alias = 'lcdash-svc'")
+
 # Permissions: a Manager allowed to manage the component still needs the consents permissions
 php = f"{L}/php"
 pw = subprocess.run([php, "-r", "echo password_hash('Manager123456789!', PASSWORD_BCRYPT);"], capture_output=True, text=True).stdout
@@ -379,6 +399,8 @@ mop = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(mjar))
 login(mop, "lcmanager", "Manager123456789!")
 html = req("?option=com_lcookies&view=services", opener=mop)
 check("manager can manage the component", "This website" in html, html[:200])
+html = req("?option=com_lcookies&view=dashboard", opener=mop)
+check("manager dashboard without consent statistics", 'id="lcookies-dashboard"' in html and 'id="lcookies-stats"' not in html, html[:200])
 html = req("?option=com_lcookies&view=consents", opener=mop)
 check("manager without permission: consents refused", U2 not in html and ("not authorised" in html.lower() or "403" in html), html[:200])
 sql("UPDATE jos_assets SET rules = '{\"core.manage\":{\"6\":1},\"lcookies.consents.view\":{\"6\":1}}' WHERE name = 'com_lcookies'")

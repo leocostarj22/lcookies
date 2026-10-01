@@ -44,6 +44,7 @@
 	<administration>
 		<menu img="class:shield-alt">com_lcookies</menu>
 		<submenu>
+			<menu link="option=com_lcookies&amp;view=dashboard" view="dashboard" alt="LCookies/Dashboard">com_lcookies_menu_dashboard</menu>
 			<menu link="option=com_lcookies&amp;view=categories" view="categories" alt="LCookies/Categories">com_lcookies_menu_categories</menu>
 			<menu link="option=com_lcookies&amp;view=services" view="services" alt="LCookies/Services">com_lcookies_menu_services</menu>
 			<menu link="option=com_lcookies&amp;view=cookies" view="cookies" alt="LCookies/Cookies">com_lcookies_menu_cookies</menu>
