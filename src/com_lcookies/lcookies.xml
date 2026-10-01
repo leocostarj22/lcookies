@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension type="component" method="upgrade">
+	<name>com_lcookies</name>
+	<author>Lcsilva</author>
+	<creationDate>2026-10</creationDate>
+	<copyright>(C) 2026 Lcsilva</copyright>
+	<license>GNU General Public License version 2 or later; see LICENSE.txt</license>
+	<authorEmail></authorEmail>
+	<authorUrl>https://github.com/leocostarj22/lcookies</authorUrl>
+	<version>0.4.0</version>
+	<description>COM_LCOOKIES_XML_DESCRIPTION</description>
+	<namespace path="src">Lcsilva\Component\Lcookies</namespace>
+
+	<install>
+		<sql>
+			<file driver="mysql" charset="utf8">sql/install.mysql.utf8.sql</file>
+			<file driver="postgresql" charset="utf8">sql/install.postgresql.utf8.sql</file>
+		</sql>
+	</install>
+	<uninstall>
+		<sql>
+			<file driver="mysql" charset="utf8">sql/uninstall.mysql.utf8.sql</file>
+			<file driver="postgresql" charset="utf8">sql/uninstall.postgresql.utf8.sql</file>
+		</sql>
+	</uninstall>
+	<update>
+		<schemas>
+			<schemapath type="mysql">sql/updates/mysql</schemapath>
+			<schemapath type="postgresql">sql/updates/postgresql</schemapath>
+		</schemas>
+	</update>
+
+	<files folder="site">
+		<folder>language</folder>
+		<folder>src</folder>
+	</files>
+
+	<api>
+		<files folder="api">
+			<folder>src</folder>
+		</files>
+	</api>
+
+	<administration>
+		<menu img="class:shield-alt">com_lcookies</menu>
+		<submenu>
+			<menu link="option=com_lcookies&amp;view=categories" view="categories" alt="LCookies/Categories">com_lcookies_menu_categories</menu>
+			<menu link="option=com_lcookies&amp;view=services" view="services" alt="LCookies/Services">com_lcookies_menu_services</menu>
+			<menu link="option=com_lcookies&amp;view=cookies" view="cookies" alt="LCookies/Cookies">com_lcookies_menu_cookies</menu>
+			<menu link="option=com_lcookies&amp;view=consents" view="consents" alt="LCookies/Consents">com_lcookies_menu_consents</menu>
+		</submenu>
+		<files folder="admin">
+			<filename>access.xml</filename>
+			<filename>config.xml</filename>
+			<folder>forms</folder>
+			<folder>language</folder>
+			<folder>services</folder>
+			<folder>sql</folder>
+			<folder>src</folder>
+			<folder>tmpl</folder>
+		</files>
+	</administration>
+</extension>

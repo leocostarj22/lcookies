@@ -1,0 +1,1 @@
+-- Initial schema version (see install.postgresql.utf8.sql)

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://developer.joomla.org/schemas/json-schema/web_assets.json",
+  "name": "plg_system_lcookies",
+  "version": "0.4.0",
+  "description": "LCookies consent banner",
+  "license": "GPL-2.0-or-later",
+  "assets": [
+    {
+      "name": "plg_system_lcookies.lcookies",
+      "type": "style",
+      "uri": "plg_system_lcookies/lcookies.min.css"
+    },
+    {
+      "name": "plg_system_lcookies.lcookies",
+      "type": "script",
+      "uri": "plg_system_lcookies/lcookies.min.js",
+      "dependencies": [
+        "core"
+      ],
+      "attributes": {
+        "type": "module"
+      }
+    },
+    {
+      "name": "plg_system_lcookies.lcookies",
+      "type": "preset",
+      "dependencies": [
+        "plg_system_lcookies.lcookies#style",
+        "plg_system_lcookies.lcookies#script"
+      ]
+    }
+  ]
+}

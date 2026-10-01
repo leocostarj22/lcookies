@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form addfieldprefix="Lcsilva\Component\Lcookies\Administrator\Field">
+	<fields name="filter">
+		<field
+			name="search"
+			type="text"
+			inputmode="search"
+			label="COM_LCOOKIES_FILTER_SEARCH_CONSENTS_LABEL"
+			description="COM_LCOOKIES_FILTER_SEARCH_CONSENTS_DESC"
+			hint="JSEARCH_FILTER"
+		/>
+		<field
+			name="action"
+			type="list"
+			label="COM_LCOOKIES_HEADING_ACTION"
+			class="js-select-submit-on-change"
+			>
+			<option value="">COM_LCOOKIES_SELECT_ACTION</option>
+			<option value="accept_all">COM_LCOOKIES_CONSENT_ACTION_ACCEPT_ALL</option>
+			<option value="reject_all">COM_LCOOKIES_CONSENT_ACTION_REJECT_ALL</option>
+			<option value="custom">COM_LCOOKIES_CONSENT_ACTION_CUSTOM</option>
+			<option value="allow">COM_LCOOKIES_CONSENT_ACTION_ALLOW</option>
+		</field>
+		<field
+			name="category"
+			type="lcookiescategory"
+			key="alias"
+			label="COM_LCOOKIES_FILTER_CONSENT_CATEGORY_LABEL"
+			class="js-select-submit-on-change"
+			>
+			<option value="">COM_LCOOKIES_SELECT_ACCEPTED_CATEGORY</option>
+		</field>
+		<field
+			name="policy_version"
+			type="sql"
+			label="COM_LCOOKIES_HEADING_POLICY_VERSION"
+			query="SELECT DISTINCT policy_version AS value, policy_version AS text FROM #__lcookies_consents ORDER BY policy_version DESC"
+			class="js-select-submit-on-change"
+			>
+			<option value="">COM_LCOOKIES_SELECT_POLICY_VERSION</option>
+		</field>
+		<field
+			name="user"
+			type="list"
+			label="COM_LCOOKIES_HEADING_USER"
+			class="js-select-submit-on-change"
+			>
+			<option value="">COM_LCOOKIES_SELECT_USER</option>
+			<option value="registered">COM_LCOOKIES_USER_REGISTERED</option>
+			<option value="guest">COM_LCOOKIES_USER_GUEST</option>
+		</field>
+		<field
+			name="from"
+			type="calendar"
+			label="COM_LCOOKIES_FILTER_FROM_LABEL"
+			hint="COM_LCOOKIES_FILTER_FROM_LABEL"
+			format="%Y-%m-%d"
+			class="js-select-submit-on-change"
+		/>
+		<field
+			name="to"
+			type="calendar"
+			label="COM_LCOOKIES_FILTER_TO_LABEL"
+			hint="COM_LCOOKIES_FILTER_TO_LABEL"
+			format="%Y-%m-%d"
+			class="js-select-submit-on-change"
+		/>
+	</fields>
+	<fields name="list">
+		<field
+			name="fullordering"
+			type="list"
+			label="JGLOBAL_SORT_BY"
+			class="js-select-submit-on-change"
+			default="a.id DESC"
+			validate="options"
+			>
+			<option value="">JGLOBAL_SORT_BY</option>
+			<option value="a.id DESC">COM_LCOOKIES_DATE_DESC</option>
+			<option value="a.id ASC">COM_LCOOKIES_DATE_ASC</option>
+			<option value="a.action ASC">COM_LCOOKIES_ACTION_ASC</option>
+			<option value="a.action DESC">COM_LCOOKIES_ACTION_DESC</option>
+			<option value="a.policy_version ASC">COM_LCOOKIES_POLICY_VERSION_ASC</option>
+			<option value="a.policy_version DESC">COM_LCOOKIES_POLICY_VERSION_DESC</option>
+		</field>
+		<field
+			name="limit"
+			type="limitbox"
+			label="JGLOBAL_LIST_LIMIT"
+			default="25"
+			class="js-select-submit-on-change"
+		/>
+	</fields>
+</form>

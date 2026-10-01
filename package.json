@@ -1,0 +1,11 @@
+{
+  "name": "lcookies",
+  "private": true,
+  "description": "Build and test tools for LCookies. Run: npm install, then python3 build/build.py or node tests/e2e_front.mjs",
+  "license": "GPL-2.0-or-later",
+  "devDependencies": {
+    "axe-core": "^4.10.0",
+    "esbuild": "^0.25.0",
+    "playwright-core": "^1.56.0"
+  }
+}

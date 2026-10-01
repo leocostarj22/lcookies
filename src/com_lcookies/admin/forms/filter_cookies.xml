@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form addfieldprefix="Lcsilva\Component\Lcookies\Administrator\Field">
+	<fields name="filter">
+		<field name="search" type="text" inputmode="search" label="JSEARCH_FILTER" hint="JSEARCH_FILTER" />
+		<field
+			name="published"
+			type="status"
+			label="JSTATUS"
+			optionsFilter="*,0,1,-2"
+			class="js-select-submit-on-change"
+			>
+			<option value="">JOPTION_SELECT_PUBLISHED</option>
+		</field>
+		<field
+			name="category_id"
+			type="lcookiescategory"
+			label="COM_LCOOKIES_FIELD_CATEGORY_LABEL"
+			class="js-select-submit-on-change"
+			>
+			<option value="">COM_LCOOKIES_SELECT_CATEGORY</option>
+		</field>
+		<field
+			name="service_id"
+			type="lcookiesservice"
+			label="COM_LCOOKIES_FIELD_SERVICE_LABEL"
+			class="js-select-submit-on-change"
+			>
+			<option value="">COM_LCOOKIES_SELECT_SERVICE</option>
+		</field>
+		<field
+			name="type"
+			type="list"
+			label="COM_LCOOKIES_FIELD_TYPE_LABEL"
+			class="js-select-submit-on-change"
+			>
+			<option value="">COM_LCOOKIES_SELECT_TYPE</option>
+			<option value="cookie">COM_LCOOKIES_TYPE_COOKIE</option>
+			<option value="local">COM_LCOOKIES_TYPE_LOCAL</option>
+			<option value="session">COM_LCOOKIES_TYPE_SESSION</option>
+			<option value="pixel">COM_LCOOKIES_TYPE_PIXEL</option>
+		</field>
+		<field
+			name="source"
+			type="list"
+			label="COM_LCOOKIES_FIELD_SOURCE_LABEL"
+			class="js-select-submit-on-change"
+			>
+			<option value="">COM_LCOOKIES_SELECT_SOURCE</option>
+			<option value="manual">COM_LCOOKIES_SOURCE_MANUAL</option>
+			<option value="scanner">COM_LCOOKIES_SOURCE_SCANNER</option>
+		</field>
+	</fields>
+	<fields name="list">
+		<field
+			name="fullordering"
+			type="list"
+			label="JGLOBAL_SORT_BY"
+			class="js-select-submit-on-change"
+			default="a.ordering ASC"
+			validate="options"
+			>
+			<option value="">JGLOBAL_SORT_BY</option>
+			<option value="a.ordering ASC">JGRID_HEADING_ORDERING_ASC</option>
+			<option value="a.ordering DESC">JGRID_HEADING_ORDERING_DESC</option>
+			<option value="a.state ASC">JSTATUS_ASC</option>
+			<option value="a.state DESC">JSTATUS_DESC</option>
+			<option value="a.name ASC">COM_LCOOKIES_NAME_ASC</option>
+			<option value="a.name DESC">COM_LCOOKIES_NAME_DESC</option>
+			<option value="s.title ASC">COM_LCOOKIES_SERVICE_ASC</option>
+			<option value="s.title DESC">COM_LCOOKIES_SERVICE_DESC</option>
+			<option value="a.id ASC">JGRID_HEADING_ID_ASC</option>
+			<option value="a.id DESC">JGRID_HEADING_ID_DESC</option>
+		</field>
+		<field
+			name="limit"
+			type="limitbox"
+			label="JGLOBAL_LIST_LIMIT"
+			default="25"
+			class="js-select-submit-on-change"
+		/>
+	</fields>
+</form>

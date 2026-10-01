@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+	<help key="LCookies:_Options" />
+	<inlinehelp button="show" />
+
+	<fieldset name="general" label="COM_LCOOKIES_CONFIG_GENERAL" description="COM_LCOOKIES_CONFIG_GENERAL_DESC">
+		<field
+			name="policy_version"
+			type="number"
+			label="COM_LCOOKIES_CONFIG_POLICY_VERSION_LABEL"
+			description="COM_LCOOKIES_CONFIG_POLICY_VERSION_DESC"
+			default="1"
+			min="1"
+			step="1"
+			filter="integer"
+			required="true"
+		/>
+		<field
+			name="consent_expiry_days"
+			type="number"
+			label="COM_LCOOKIES_CONFIG_CONSENT_EXPIRY_LABEL"
+			description="COM_LCOOKIES_CONFIG_CONSENT_EXPIRY_DESC"
+			default="180"
+			min="1"
+			max="395"
+			step="1"
+			filter="integer"
+			required="true"
+		/>
+		<field
+			name="privacy_menuitem"
+			type="menuitem"
+			label="COM_LCOOKIES_CONFIG_PRIVACY_MENUITEM_LABEL"
+			description="COM_LCOOKIES_CONFIG_PRIVACY_MENUITEM_DESC"
+			filter="integer"
+			>
+			<option value="">JNONE</option>
+		</field>
+		<field
+			name="cookie_domain"
+			type="text"
+			label="COM_LCOOKIES_CONFIG_COOKIE_DOMAIN_LABEL"
+			description="COM_LCOOKIES_CONFIG_COOKIE_DOMAIN_DESC"
+			hint=".example.com"
+			filter="string"
+		/>
+		<field
+			name="respect_gpc"
+			type="radio"
+			layout="joomla.form.field.radio.switcher"
+			label="COM_LCOOKIES_CONFIG_RESPECT_GPC_LABEL"
+			description="COM_LCOOKIES_CONFIG_RESPECT_GPC_DESC"
+			default="1"
+			filter="integer"
+			>
+			<option value="0">JNO</option>
+			<option value="1">JYES</option>
+		</field>
+	</fieldset>
+
+	<fieldset name="blocking" label="COM_LCOOKIES_CONFIG_BLOCKING" description="COM_LCOOKIES_CONFIG_BLOCKING_DESC">
+		<field
+			name="autoblock"
+			type="radio"
+			layout="joomla.form.field.radio.switcher"
+			label="COM_LCOOKIES_CONFIG_AUTOBLOCK_LABEL"
+			description="COM_LCOOKIES_CONFIG_AUTOBLOCK_DESC"
+			default="1"
+			filter="integer"
+			>
+			<option value="0">JNO</option>
+			<option value="1">JYES</option>
+		</field>
+		<field
+			name="iframe_placeholder"
+			type="radio"
+			layout="joomla.form.field.radio.switcher"
+			label="COM_LCOOKIES_CONFIG_IFRAME_PLACEHOLDER_LABEL"
+			description="COM_LCOOKIES_CONFIG_IFRAME_PLACEHOLDER_DESC"
+			default="1"
+			filter="integer"
+			showon="autoblock:1"
+			>
+			<option value="0">JNO</option>
+			<option value="1">JYES</option>
+		</field>
+	</fieldset>
+
+	<fieldset name="appearance" label="COM_LCOOKIES_CONFIG_APPEARANCE">
+		<field
+			name="layout"
+			type="list"
+			label="COM_LCOOKIES_CONFIG_LAYOUT_LABEL"
+			default="box-bottom-left"
+			validate="options"
+			>
+			<option value="bar-bottom">COM_LCOOKIES_CONFIG_LAYOUT_BAR_BOTTOM</option>
+			<option value="bar-top">COM_LCOOKIES_CONFIG_LAYOUT_BAR_TOP</option>
+			<option value="box-bottom-left">COM_LCOOKIES_CONFIG_LAYOUT_BOX_LEFT</option>
+			<option value="box-bottom-right">COM_LCOOKIES_CONFIG_LAYOUT_BOX_RIGHT</option>
+			<option value="modal">COM_LCOOKIES_CONFIG_LAYOUT_MODAL</option>
+		</field>
+		<field
+			name="theme"
+			type="list"
+			label="COM_LCOOKIES_CONFIG_THEME_LABEL"
+			default="auto"
+			validate="options"
+			>
+			<option value="auto">COM_LCOOKIES_CONFIG_THEME_AUTO</option>
+			<option value="light">COM_LCOOKIES_CONFIG_THEME_LIGHT</option>
+			<option value="dark">COM_LCOOKIES_CONFIG_THEME_DARK</option>
+		</field>
+		<field
+			name="color_primary"
+			type="color"
+			label="COM_LCOOKIES_CONFIG_COLOR_PRIMARY_LABEL"
+			default="#1f5fbf"
+		/>
+		<field
+			name="border_radius"
+			type="number"
+			label="COM_LCOOKIES_CONFIG_BORDER_RADIUS_LABEL"
+			default="8"
+			min="0"
+			max="32"
+			filter="integer"
+		/>
+		<field
+			name="floating_button"
+			type="radio"
+			layout="joomla.form.field.radio.switcher"
+			label="COM_LCOOKIES_CONFIG_FLOATING_BUTTON_LABEL"
+			description="COM_LCOOKIES_CONFIG_FLOATING_BUTTON_DESC"
+			default="1"
+			filter="integer"
+			>
+			<option value="0">JNO</option>
+			<option value="1">JYES</option>
+		</field>
+		<field
+			name="floating_position"
+			type="list"
+			label="COM_LCOOKIES_CONFIG_FLOATING_POSITION_LABEL"
+			default="left"
+			validate="options"
+			showon="floating_button:1"
+			>
+			<option value="left">COM_LCOOKIES_CONFIG_POSITION_LEFT</option>
+			<option value="right">COM_LCOOKIES_CONFIG_POSITION_RIGHT</option>
+		</field>
+	</fieldset>
+
+	<fieldset name="texts" label="COM_LCOOKIES_CONFIG_TEXTS" description="COM_LCOOKIES_CONFIG_TEXTS_DESC">
+		<field name="text_title" type="text" label="COM_LCOOKIES_CONFIG_TEXT_TITLE_LABEL" filter="string" />
+		<field name="text_message" type="textarea" label="COM_LCOOKIES_CONFIG_TEXT_MESSAGE_LABEL" rows="4" filter="safehtml" />
+		<field name="text_accept" type="text" label="COM_LCOOKIES_CONFIG_TEXT_ACCEPT_LABEL" filter="string" />
+		<field name="text_reject" type="text" label="COM_LCOOKIES_CONFIG_TEXT_REJECT_LABEL" filter="string" />
+		<field name="text_settings" type="text" label="COM_LCOOKIES_CONFIG_TEXT_SETTINGS_LABEL" filter="string" />
+		<field name="text_save" type="text" label="COM_LCOOKIES_CONFIG_TEXT_SAVE_LABEL" filter="string" />
+	</fieldset>
+
+	<fieldset name="consentmode" label="COM_LCOOKIES_CONFIG_CONSENTMODE" description="COM_LCOOKIES_CONFIG_CONSENTMODE_DESC">
+		<field
+			name="gcm_enabled"
+			type="radio"
+			layout="joomla.form.field.radio.switcher"
+			label="COM_LCOOKIES_CONFIG_GCM_ENABLED_LABEL"
+			default="0"
+			filter="integer"
+			>
+			<option value="0">JNO</option>
+			<option value="1">JYES</option>
+		</field>
+		<field
+			name="gcm_wait_for_update"
+			type="number"
+			label="COM_LCOOKIES_CONFIG_GCM_WAIT_LABEL"
+			description="COM_LCOOKIES_CONFIG_GCM_WAIT_DESC"
+			default="500"
+			min="0"
+			max="10000"
+			filter="integer"
+			showon="gcm_enabled:1"
+		/>
+		<field
+			name="gcm_ads_data_redaction"
+			type="radio"
+			layout="joomla.form.field.radio.switcher"
+			label="COM_LCOOKIES_CONFIG_GCM_REDACTION_LABEL"
+			description="COM_LCOOKIES_CONFIG_GCM_REDACTION_DESC"
+			default="1"
+			filter="integer"
+			showon="gcm_enabled:1"
+			>
+			<option value="0">JNO</option>
+			<option value="1">JYES</option>
+		</field>
+		<field
+			name="gcm_url_passthrough"
+			type="radio"
+			layout="joomla.form.field.radio.switcher"
+			label="COM_LCOOKIES_CONFIG_GCM_PASSTHROUGH_LABEL"
+			description="COM_LCOOKIES_CONFIG_GCM_PASSTHROUGH_DESC"
+			default="0"
+			filter="integer"
+			showon="gcm_enabled:1"
+			>
+			<option value="0">JNO</option>
+			<option value="1">JYES</option>
+		</field>
+	</fieldset>
+
+	<fieldset name="logging" label="COM_LCOOKIES_CONFIG_LOGGING" description="COM_LCOOKIES_CONFIG_LOGGING_DESC">
+		<field
+			name="log_consents"
+			type="radio"
+			layout="joomla.form.field.radio.switcher"
+			label="COM_LCOOKIES_CONFIG_LOG_CONSENTS_LABEL"
+			default="1"
+			filter="integer"
+			>
+			<option value="0">JNO</option>
+			<option value="1">JYES</option>
+		</field>
+		<field
+			name="log_retention_months"
+			type="number"
+			label="COM_LCOOKIES_CONFIG_LOG_RETENTION_LABEL"
+			description="COM_LCOOKIES_CONFIG_LOG_RETENTION_DESC"
+			default="24"
+			min="1"
+			max="120"
+			filter="integer"
+			showon="log_consents:1"
+		/>
+	</fieldset>
+
+	<fieldset name="permissions" label="JCONFIG_PERMISSIONS_LABEL" description="JCONFIG_PERMISSIONS_DESC">
+		<field
+			name="rules"
+			type="rules"
+			label="JCONFIG_PERMISSIONS_LABEL"
+			validate="rules"
+			filter="rules"
+			component="com_lcookies"
+			section="component"
+		/>
+	</fieldset>
+</config>

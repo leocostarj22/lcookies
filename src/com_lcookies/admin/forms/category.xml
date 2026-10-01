@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form>
+	<fieldset name="details">
+		<field name="id" type="number" label="JGLOBAL_FIELD_ID_LABEL" default="0" readonly="true" class="readonly" />
+		<field
+			name="title"
+			type="text"
+			label="JGLOBAL_TITLE"
+			description="COM_LCOOKIES_FIELD_TITLE_CONSTANT_DESC"
+			required="true"
+			maxlength="255"
+		/>
+		<field
+			name="alias"
+			type="text"
+			label="JFIELD_ALIAS_LABEL"
+			description="COM_LCOOKIES_FIELD_CATEGORY_ALIAS_DESC"
+			hint="JFIELD_ALIAS_PLACEHOLDER"
+			maxlength="100"
+		/>
+		<field
+			name="description"
+			type="textarea"
+			label="JGLOBAL_DESCRIPTION"
+			description="COM_LCOOKIES_FIELD_DESCRIPTION_DESC"
+			rows="5"
+			filter="safehtml"
+		/>
+		<field
+			name="required"
+			type="radio"
+			layout="joomla.form.field.radio.switcher"
+			label="COM_LCOOKIES_FIELD_REQUIRED_LABEL"
+			description="COM_LCOOKIES_FIELD_REQUIRED_DESC"
+			default="0"
+			filter="integer"
+			>
+			<option value="0">JNO</option>
+			<option value="1">JYES</option>
+		</field>
+		<field
+			name="gcm_types"
+			type="checkboxes"
+			validate="options"
+			label="COM_LCOOKIES_FIELD_GCM_TYPES_LABEL"
+			description="COM_LCOOKIES_FIELD_GCM_TYPES_DESC"
+			multiple="true"
+			>
+			<option value="ad_storage">ad_storage</option>
+			<option value="ad_user_data">ad_user_data</option>
+			<option value="ad_personalization">ad_personalization</option>
+			<option value="analytics_storage">analytics_storage</option>
+			<option value="functionality_storage">functionality_storage</option>
+			<option value="personalization_storage">personalization_storage</option>
+			<option value="security_storage">security_storage</option>
+		</field>
+		<field
+			name="state"
+			type="list"
+			label="JSTATUS"
+			class="form-select-color-state"
+			default="1"
+			validate="options"
+			filter="integer"
+			>
+			<option value="1">JPUBLISHED</option>
+			<option value="0">JUNPUBLISHED</option>
+			<option value="-2">JTRASHED</option>
+		</field>
+	</fieldset>
+</form>

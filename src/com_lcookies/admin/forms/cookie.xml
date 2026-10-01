@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form addfieldprefix="Lcsilva\Component\Lcookies\Administrator\Field">
+	<fieldset name="details">
+		<field name="id" type="number" label="JGLOBAL_FIELD_ID_LABEL" default="0" readonly="true" class="readonly" />
+		<field
+			name="name"
+			type="text"
+			label="COM_LCOOKIES_FIELD_COOKIE_NAME_LABEL"
+			description="COM_LCOOKIES_FIELD_COOKIE_NAME_DESC"
+			required="true"
+			maxlength="255"
+			class="font-monospace"
+			filter="raw"
+		/>
+		<field
+			name="match_type"
+			type="list"
+			label="COM_LCOOKIES_FIELD_MATCH_TYPE_LABEL"
+			description="COM_LCOOKIES_FIELD_MATCH_TYPE_DESC"
+			default="exact"
+			validate="options"
+			>
+			<option value="exact">COM_LCOOKIES_MATCH_EXACT</option>
+			<option value="prefix">COM_LCOOKIES_MATCH_PREFIX</option>
+			<option value="regex">COM_LCOOKIES_MATCH_REGEX</option>
+		</field>
+		<field
+			name="service_id"
+			type="lcookiesservice"
+			label="COM_LCOOKIES_FIELD_SERVICE_LABEL"
+			required="true"
+			filter="integer"
+			>
+			<option value="">COM_LCOOKIES_SELECT_SERVICE</option>
+		</field>
+		<field
+			name="type"
+			type="list"
+			label="COM_LCOOKIES_FIELD_TYPE_LABEL"
+			default="cookie"
+			validate="options"
+			>
+			<option value="cookie">COM_LCOOKIES_TYPE_COOKIE</option>
+			<option value="local">COM_LCOOKIES_TYPE_LOCAL</option>
+			<option value="session">COM_LCOOKIES_TYPE_SESSION</option>
+			<option value="pixel">COM_LCOOKIES_TYPE_PIXEL</option>
+		</field>
+		<field
+			name="domain"
+			type="text"
+			label="COM_LCOOKIES_FIELD_DOMAIN_LABEL"
+			description="COM_LCOOKIES_FIELD_DOMAIN_DESC"
+			maxlength="255"
+		/>
+		<field
+			name="duration_unit"
+			type="list"
+			label="COM_LCOOKIES_FIELD_DURATION_UNIT_LABEL"
+			default="session"
+			validate="options"
+			>
+			<option value="session">COM_LCOOKIES_UNIT_SESSION</option>
+			<option value="minute">COM_LCOOKIES_UNIT_MINUTE</option>
+			<option value="hour">COM_LCOOKIES_UNIT_HOUR</option>
+			<option value="day">COM_LCOOKIES_UNIT_DAY</option>
+			<option value="month">COM_LCOOKIES_UNIT_MONTH</option>
+			<option value="year">COM_LCOOKIES_UNIT_YEAR</option>
+		</field>
+		<field
+			name="duration_value"
+			type="number"
+			label="COM_LCOOKIES_FIELD_DURATION_VALUE_LABEL"
+			default="1"
+			min="1"
+			filter="integer"
+			showon="duration_unit!:session"
+		/>
+		<field
+			name="description"
+			type="textarea"
+			label="JGLOBAL_DESCRIPTION"
+			description="COM_LCOOKIES_FIELD_DESCRIPTION_DESC"
+			rows="4"
+			filter="safehtml"
+		/>
+		<field
+			name="source"
+			type="list"
+			label="COM_LCOOKIES_FIELD_SOURCE_LABEL"
+			default="manual"
+			readonly="true"
+			>
+			<option value="manual">COM_LCOOKIES_SOURCE_MANUAL</option>
+			<option value="scanner">COM_LCOOKIES_SOURCE_SCANNER</option>
+		</field>
+		<field
+			name="state"
+			type="list"
+			label="JSTATUS"
+			class="form-select-color-state"
+			default="1"
+			validate="options"
+			filter="integer"
+			>
+			<option value="1">JPUBLISHED</option>
+			<option value="0">JUNPUBLISHED</option>
+			<option value="-2">JTRASHED</option>
+		</field>
+	</fieldset>
+</form>

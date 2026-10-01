@@ -1,0 +1,335 @@
+/**
+ * End-to-end test of the LCookies frontend in a real browser (Playwright + axe-core).
+ *
+ * Usage: node tests/e2e_front.mjs <site url> <joomla root>
+ *   e.g. node tests/e2e_front.mjs http://127.0.0.1:8106 /tmp/claude-1000/lc/j6.0.0
+ * Env: LC_PHP (PHP CLI binary), LC_CHROME (Chromium binary), LC_SHOTS (folder for screenshots).
+ *
+ * Uses tests/fixture.php to add test services and a module with scripts/iframes to the site,
+ * and changes the component options: run it only against a test site.
+ */
+
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { homedir } from 'node:os';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { chromium } from 'playwright-core';
+
+const require = createRequire(import.meta.url);
+const project = join(dirname(fileURLToPath(import.meta.url)), '..');
+const [url, root] = process.argv.slice(2);
+
+if (!url || !root) {
+  console.error('Usage: node tests/e2e_front.mjs <site url> <joomla root>');
+  process.exit(1);
+}
+
+const PHP = process.env.LC_PHP || '/tmp/claude-1000/lc/php';
+const CHROME = process.env.LC_CHROME || join(homedir(), '.cache/ms-playwright/chromium-1234/chrome-linux64/chrome');
+const SHOTS = process.env.LC_SHOTS || '';
+const AXE = readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8');
+const DEFAULTS = ['layout=box-bottom-left', 'theme=auto', 'policy_version=1', 'gcm_enabled=1', 'respect_gpc=1',
+  'floating_button=1', 'autoblock=1', 'iframe_placeholder=1', 'log_consents=1'];
+
+let passed = 0;
+const failures = [];
+
+function check(name, condition, detail = '') {
+  if (condition) {
+    passed += 1;
+    console.log(`  ok   ${name}`);
+  } else {
+    failures.push(name);
+    console.log(`  FAIL ${name} ${detail}`);
+  }
+}
+
+const fixture = (...args) => execFileSync(PHP, [join(project, 'tests/fixture.php'), root, ...args]).toString();
+const records = () => JSON.parse(fixture('consents'));
+const isEndpoint = (r) => r.url().includes('task=consent.save') && r.request().method() === 'POST';
+
+async function shot(page, name) {
+  if (SHOTS) {
+    mkdirSync(SHOTS, { recursive: true });
+    await page.screenshot({ path: join(SHOTS, `${name}.png`) });
+  }
+}
+
+async function open(context) {
+  const page = await context.newPage();
+  const errors = [];
+
+  page.on('pageerror', (error) => errors.push(error.message));
+  // Failed requests count only for our files (the core can request files that do not exist).
+  page.on('console', (msg) => {
+    if (msg.type() === 'error' && !msg.text().startsWith('Failed to load resource')) {
+      errors.push(msg.text());
+    }
+  });
+  page.on('response', (response) => {
+    if (response.status() >= 400 && /lcookies|lctest/.test(response.url())) {
+      errors.push(`${response.status()} ${response.url()}`);
+    }
+  });
+  page.errors = errors;
+  await page.goto(url);
+  await page.waitForFunction(() => typeof window.LCookies?.open === 'function');
+
+  return page;
+}
+
+const ready = (page) => page.waitForFunction(() => typeof window.LCookies?.open === 'function');
+const consent = (page) => page.evaluate(() => window.LCookies.getConsent());
+const globals = (page) => page.evaluate(() => ({
+  external: window.lcTestExternal,
+  inline: window.lcTestInline,
+  module: window.lcTestModule,
+  dyn: window.lcTestDyn,
+  head: window.lcHeadCode,
+  body: window.lcBodyCode,
+  free: window.lcFree,
+}));
+const gcm = (page, kind) => page.evaluate((k) => (window.dataLayer || [])
+  .filter((e) => e && e[0] === 'consent' && e[1] === k).map((e) => e[2]), kind);
+
+async function axe(page, selector) {
+  await page.evaluate(AXE);
+  const result = await page.evaluate((sel) => window.axe.run(sel, { resultTypes: ['violations'] }), selector);
+
+  return result.violations.map((v) => `${v.id} (${v.nodes.length})`);
+}
+
+async function main() {
+  console.log(fixture('setup').trim());
+  fixture('params', ...DEFAULTS);
+
+  const browser = await chromium.launch({ executablePath: CHROME });
+
+  try {
+    /* 1. First visit: everything optional is blocked ------------------------------------------- */
+    console.log('First visit');
+    const context = await browser.newContext();
+    let page = await open(context);
+
+    check('banner visible', await page.isVisible('[data-lcookies-banner]'));
+    check('floating button hidden', !(await page.isVisible('[data-lcookies-floating]')));
+    let g = await globals(page);
+    check('external/inline/module scripts blocked', g.external === undefined && g.inline === undefined && g.module === undefined, JSON.stringify(g));
+    check('head/body code of the service blocked', g.head === undefined && g.body === undefined);
+    check('unrelated inline script runs', g.free === true);
+    check('script created by another script blocked (guard)', g.dyn === undefined
+      && await page.getAttribute('#lctest-dyn', 'type') === 'text/plain'
+      && await page.getAttribute('#lctest-dyn', 'data-lcookies-category') === 'statistics');
+    check('iframe without src and hidden', await page.getAttribute('#lctest-frame', 'src') === null
+      && !(await page.isVisible('#lctest-frame')));
+    check('iframe placeholder visible', await page.isVisible('.lcookies-placeholder[data-lcookies-for="lc1"]'));
+    const defaults = await gcm(page, 'default');
+    check('Consent Mode default', defaults.length === 1 && defaults[0].analytics_storage === 'denied'
+      && defaults[0].ad_storage === 'denied' && defaults[0].security_storage === 'granted' && defaults[0].wait_for_update === 500,
+    JSON.stringify(defaults));
+    check('contract has the consent endpoint', await page.evaluate(() => Joomla.getOptions('lcookies').endpoint)
+      === '/index.php?option=com_lcookies&task=consent.save&format=json');
+    check('no untranslated language constants', !(await page.content()).includes('COM_LCOOKIES_'));
+    let violations = await axe(page, '#lcookies');
+    check('axe: banner without violations', violations.length === 0, violations.join(', '));
+    await shot(page, '1-banner');
+
+    await page.keyboard.press('Tab');
+    check('first Tab reaches the banner', await page.evaluate(() => Boolean(document.activeElement.closest('[data-lcookies-banner]'))));
+
+    /* 2. Preferences dialog ------------------------------------------------------------------- */
+    console.log('Preferences');
+    await page.click('[data-lcookies-banner] [data-lcookies-action="settings"]');
+    check('preferences open (modal dialog)', await page.evaluate(() => document.querySelector('[data-lcookies-preferences]').open));
+    check('switches not pre-selected', await page.evaluate(() => [...document.querySelectorAll('[data-lcookies-toggle]')].every((i) => !i.checked)));
+    check('only categories with services are listed', await page.evaluate(() => [...document.querySelectorAll('[data-lcookies-toggle]')].map((i) => i.value).join()) === 'statistics,marketing');
+    await page.click('.lcookies-cat__details >> nth=1');
+    violations = await axe(page, '[data-lcookies-preferences]');
+    check('axe: preferences without violations', violations.length === 0, violations.join(', '));
+    await shot(page, '2-preferences');
+    await page.keyboard.press('Escape');
+    check('Escape closes the preferences', !(await page.evaluate(() => document.querySelector('[data-lcookies-preferences]').open)));
+    check('focus returns to the button that opened them', await page.evaluate(() => document.activeElement?.dataset.lcookiesAction === 'settings'));
+    check('banner still visible without a choice', await page.isVisible('[data-lcookies-banner]'));
+
+    /* 3. Accept all ----------------------------------------------------------------------------- */
+    console.log('Accept all');
+    await page.evaluate(() => {
+      window.lcEvents = [];
+      document.addEventListener('lcookies:change', (e) => window.lcEvents.push(e.detail));
+    });
+    const recorded = page.waitForResponse(isEndpoint);
+    await page.click('[data-lcookies-banner] [data-lcookies-action="accept"]');
+    const answer = await recorded;
+    // keepalive requests: the body is not available to Playwright, the records are checked in section 8.
+    check('consent sent to the endpoint', answer.status() === 200, String(answer.status()));
+    await page.waitForFunction(() => window.lcTestExternal && window.lcTestModule && window.lcTestDyn && window.lcBodyCode);
+    g = await globals(page);
+    check('scripts run once after consent', g.external === 1 && g.inline === 1 && g.head === 1 && g.module && g.dyn && g.body, JSON.stringify(g));
+    check('iframe loaded and placeholder removed', await page.getAttribute('#lctest-frame', 'src') === '/media/lctest/frame-marketing.html'
+      && await page.isVisible('#lctest-frame') && await page.locator('[data-lcookies-for="lc1"]').count() === 0);
+    let c = await consent(page);
+    check('consent cookie stored', c && c.v === 1 && c.cats.join() === 'necessary,statistics,marketing' && /^[0-9a-f-]{36}$/.test(c.id), JSON.stringify(c));
+    const updates = await gcm(page, 'update');
+    check('Consent Mode update', updates.length === 1 && updates[0].analytics_storage === 'granted' && updates[0].ad_user_data === 'granted'
+      && updates[0].functionality_storage === 'denied', JSON.stringify(updates));
+    check('dataLayer event', await page.evaluate(() => window.dataLayer.some((e) => e.event === 'lcookies_consent_update')));
+    const events = await page.evaluate(() => window.lcEvents);
+    check('lcookies:change event', events.length === 1 && events[0].action === 'accept_all' && events[0].granted.join() === 'statistics,marketing', JSON.stringify(events));
+    check('banner hidden, floating button visible', !(await page.isVisible('[data-lcookies-banner]')) && await page.isVisible('[data-lcookies-floating]'));
+    const cookies = await context.cookies();
+    check('statistics cookie set by the accepted script', cookies.some((k) => k.name === '_lc_test_a'));
+    await shot(page, '3-accepted');
+
+    /* 4. Next page view ----------------------------------------------------------------------- */
+    console.log('Reload with consent');
+    await page.reload();
+    await ready(page);
+    await page.waitForFunction(() => window.lcTestExternal && window.lcBodyCode);
+    g = await globals(page);
+    check('no banner, scripts run on load', !(await page.isVisible('[data-lcookies-banner]')) && g.inline === 1 && g.head === 1);
+
+    /* 5. Withdraw statistics from the preferences -------------------------------------------- */
+    console.log('Withdraw statistics');
+    await page.click('#lctest-link');
+    check('link to #lcookies-settings opens the preferences', await page.evaluate(() => document.querySelector('[data-lcookies-preferences]').open));
+    check('switches reflect the consent', await page.evaluate(() => [...document.querySelectorAll('[data-lcookies-toggle]')].every((i) => i.checked)));
+    await page.uncheck('[data-lcookies-toggle][value="statistics"]');
+    await Promise.all([page.waitForEvent('load'), page.click('[data-lcookies-preferences] [data-lcookies-action="save"]')]);
+    await ready(page);
+    g = await globals(page);
+    c = await consent(page);
+    check('page reloaded after withdrawing a category that ran', g.external === undefined && g.head === undefined, JSON.stringify(g));
+    check('consent now without statistics', c.cats.join() === 'necessary,marketing', JSON.stringify(c));
+    check('statistics cookie removed', !(await context.cookies()).some((k) => k.name === '_lc_test_a'));
+    check('statistics local storage removed', await page.evaluate(() => localStorage.getItem('lc_test_ls')) === null);
+    check('marketing iframe still loaded', await page.isVisible('#lctest-frame'));
+
+    /* 6. Server expires rejected cookies ------------------------------------------------------ */
+    console.log('Server cleanup');
+    const value = encodeURIComponent(JSON.stringify({ id: 'x', v: 1, cats: ['necessary'], ts: Math.floor(Date.now() / 1000) }));
+    const response = await fetch(url, { headers: { Cookie: `lcookies_consent=${value}; _lc_test_x=1` } });
+    const setCookie = response.headers.getSetCookie().join('\n');
+    check('rejected cookie expired by the server', /_lc_test_x=deleted;[^\n]*Max-Age=0/i.test(setCookie), setCookie);
+    check('consent cookie untouched by the server', !/lcookies_consent=/.test(setCookie));
+
+    /* 7. Reject all, then allow from the placeholder ----------------------------------------- */
+    console.log('Reject all + placeholder');
+    await Promise.all([page.waitForEvent('load'), page.evaluate(() => window.LCookies.rejectAll())]);
+    await ready(page);
+    check('rejectAll(): only necessary', (await consent(page)).cats.join() === 'necessary');
+    check('placeholder back after rejecting', await page.isVisible('.lcookies-placeholder[data-lcookies-for="lc1"]'));
+    await page.evaluate(() => { window.lcSamePage = true; });
+    await page.click('.lcookies-placeholder [data-lcookies-allow="marketing"]');
+    await page.waitForSelector('#lctest-frame:not([hidden])');
+    check('placeholder button allows the category without reload', await page.evaluate(() => window.lcSamePage === true)
+      && (await consent(page)).cats.join() === 'necessary,marketing');
+    check('API hasConsent()', await page.evaluate(() => window.LCookies.hasConsent('marketing') && !window.LCookies.hasConsent('statistics')
+      && window.LCookies.hasConsent('necessary')));
+
+    /* 8. Consent records -------------------------------------------------------------------- */
+    console.log('Consent records');
+    const id = (await consent(page)).id;
+    let rows = records();
+    check('one record per choice, same consent id', rows.map((r) => r.action).join() === 'accept_all,custom,reject_all,allow'
+      && rows.every((r) => r.consent_uuid === id), JSON.stringify(rows.map((r) => [r.action, r.consent_uuid])));
+    check('records keep the categories and the policy version', rows.map((r) => JSON.parse(r.categories).join('+')).join()
+      === 'necessary+statistics+marketing,necessary+marketing,necessary,necessary+marketing' && rows.every((r) => Number(r.policy_version) === 1));
+    check('IP and browser only as hashes', rows.every((r) => /^[0-9a-f]{64}$/.test(r.ip_hash) && /^[0-9a-f]{64}$/.test(r.ua_hash))
+      && rows.every((r) => !JSON.stringify({ ...r, url: '' }).includes('127.0.0')));
+    check('page URL without query string', rows.every((r) => r.url.startsWith(url) && !r.url.includes('?')), rows[0].url);
+    check('guest, site language', rows.every((r) => r.user_id === null && r.language === 'en-GB'));
+
+    /* 9. New policy version asks again --------------------------------------------------------- */
+    console.log('Policy version');
+    fixture('params', 'policy_version=2');
+    await page.reload();
+    await ready(page);
+    check('banner shown again after a new policy version', await page.isVisible('[data-lcookies-banner]'));
+    check('old consent ignored', (await consent(page)) === null && await page.evaluate(() => window.lcTestExternal) === undefined);
+    fixture('params', 'policy_version=1');
+    await context.close();
+
+    /* 10. Global Privacy Control --------------------------------------------------------------- */
+    console.log('GPC');
+    const gpcContext = await browser.newContext();
+    await gpcContext.addInitScript(() => Object.defineProperty(Navigator.prototype, 'globalPrivacyControl', { get: () => true }));
+    page = await open(gpcContext);
+    await page.click('[data-lcookies-banner] [data-lcookies-action="accept"]');
+    check('accept all with GPC leaves marketing off', (await consent(page)).cats.join() === 'necessary,statistics');
+    await page.click('[data-lcookies-floating]');
+    check('marketing switch disabled with notice', await page.evaluate(() => {
+      const input = document.querySelector('[data-lcookies-toggle][value="marketing"]');
+      return input.disabled && !input.checked && !input.closest('section').querySelector('[data-lcookies-gpc]').hidden;
+    }));
+    await shot(page, '4-gpc');
+    check('no JavaScript errors (GPC)', page.errors.length === 0, page.errors.join(' | '));
+    await gpcContext.close();
+
+    /* 11. Modal layout and dark theme --------------------------------------------------------- */
+    console.log('Modal layout');
+    fixture('params', 'layout=modal', 'theme=dark');
+    const modalContext = await browser.newContext();
+    page = await open(modalContext);
+    check('modal banner open', await page.evaluate(() => document.querySelector('dialog[data-lcookies-banner]')?.open === true));
+    await page.keyboard.press('Escape');
+    check('Escape does not dismiss the modal banner', await page.evaluate(() => document.querySelector('dialog[data-lcookies-banner]').open));
+    violations = await axe(page, '#lcookies');
+    check('axe: modal banner (dark) without violations', violations.length === 0, violations.join(', '));
+    await shot(page, '5-modal-dark');
+    await page.click('[data-lcookies-banner] [data-lcookies-action="reject"]');
+    check('modal closes after a choice', await page.evaluate(() => !document.querySelector('dialog[data-lcookies-banner]').open));
+    check('no JavaScript errors (modal)', page.errors.length === 0, page.errors.join(' | '));
+    await modalContext.close();
+
+    /* 12. Bar layout on a phone ---------------------------------------------------------------- */
+    console.log('Bar layout, small screen');
+    fixture('params', 'layout=bar-bottom', 'theme=light');
+    const phone = await browser.newContext({ viewport: { width: 375, height: 700 } });
+    page = await open(phone);
+    const box = await page.locator('[data-lcookies-banner]').boundingBox();
+    check('bar fits the screen at the bottom', box && box.x === 0 && Math.round(box.width) === 375 && Math.round(box.y + box.height) === 700, JSON.stringify(box));
+    await shot(page, '6-bar-phone');
+    await page.click('[data-lcookies-banner] [data-lcookies-action="settings"]');
+    const dialog = await page.locator('[data-lcookies-preferences]').boundingBox();
+    check('preferences fit the phone screen', dialog && dialog.width <= 375 && dialog.height <= 700, JSON.stringify(dialog));
+    await shot(page, '7-preferences-phone');
+    check('no JavaScript errors (bar)', page.errors.length === 0, page.errors.join(' | '));
+    await phone.close();
+
+    /* 13. Logging turned off ------------------------------------------------------------------- */
+    console.log('Logging off');
+    fixture('params', 'log_consents=0');
+    const before = records().length;
+    const quiet = await browser.newContext();
+    page = await open(quiet);
+    let posted = false;
+    page.on('request', (r) => { posted = posted || (r.url().includes('task=consent.save')); });
+    check('no endpoint in the contract', await page.evaluate(() => Joomla.getOptions('lcookies').endpoint) === null);
+    await page.click('[data-lcookies-banner] [data-lcookies-action="accept"]');
+    await page.waitForTimeout(500);
+    check('nothing sent or recorded', !posted && records().length === before);
+    const off = await fetch(`${url}/index.php?option=com_lcookies&task=consent.save&format=json`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}',
+    });
+    check('endpoint answers 404 when off', off.status === 404);
+    await quiet.close();
+  } finally {
+    await browser.close();
+    fixture('params', ...DEFAULTS, 'gcm_enabled=0');
+    console.log(fixture('teardown').trim());
+  }
+
+  console.log(`\n${passed}/${passed + failures.length} checks passed`);
+
+  if (failures.length) {
+    process.exitCode = 1;
+  }
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

@@ -1,0 +1,53 @@
+# Release of LCookies: push a tag vX.Y.Z (equal to <version> in src/pkg_lcookies.xml).
+# Builds the package and publishes a GitHub release with pkg_lcookies-X.Y.Z.zip and pkg_lcookies.xml
+# (the Joomla update server file; sites read it from releases/latest/download/pkg_lcookies.xml).
+# The repository must be public so that sites can download both files.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Check the tag matches the package version
+        run: |
+          version=$(sed -n 's:.*<version>\(.*\)</version>.*:\1:p' src/pkg_lcookies.xml | head -1)
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match <version>$version</version> in src/pkg_lcookies.xml"
+            exit 1
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Build
+        run: |
+          npm ci --no-audit --no-fund
+          python build/build.py
+
+      - name: GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" "dist/pkg_lcookies-$VERSION.zip" dist/pkg_lcookies.xml \
+            --title "LCookies $VERSION" \
+            --notes "Package for Joomla 5.2+ and 6. Install it in System → Install → Extensions; sites with LCookies installed get it through System → Update → Extensions." \
+            $([[ "$VERSION" == *-* ]] && echo --prerelease)

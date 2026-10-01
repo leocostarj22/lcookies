@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<access component="com_lcookies">
+	<section name="component">
+		<action name="core.admin" title="JACTION_ADMIN" />
+		<action name="core.options" title="JACTION_OPTIONS" />
+		<action name="core.manage" title="JACTION_MANAGE" />
+		<action name="core.create" title="JACTION_CREATE" />
+		<action name="core.delete" title="JACTION_DELETE" />
+		<action name="core.edit" title="JACTION_EDIT" />
+		<action name="core.edit.state" title="JACTION_EDITSTATE" />
+		<action name="lcookies.consents.view" title="COM_LCOOKIES_ACTION_CONSENTS_VIEW" description="COM_LCOOKIES_ACTION_CONSENTS_VIEW_DESC" />
+		<action name="lcookies.consents.export" title="COM_LCOOKIES_ACTION_CONSENTS_EXPORT" description="COM_LCOOKIES_ACTION_CONSENTS_EXPORT_DESC" />
+		<action name="lcookies.scan" title="COM_LCOOKIES_ACTION_SCAN" description="COM_LCOOKIES_ACTION_SCAN_DESC" />
+	</section>
+</access>

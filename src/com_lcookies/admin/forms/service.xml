@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form addfieldprefix="Lcsilva\Component\Lcookies\Administrator\Field">
+	<fieldset name="details">
+		<field name="id" type="number" label="JGLOBAL_FIELD_ID_LABEL" default="0" readonly="true" class="readonly" />
+		<field
+			name="title"
+			type="text"
+			label="JGLOBAL_TITLE"
+			description="COM_LCOOKIES_FIELD_TITLE_CONSTANT_DESC"
+			required="true"
+			maxlength="255"
+		/>
+		<field
+			name="alias"
+			type="text"
+			label="JFIELD_ALIAS_LABEL"
+			description="COM_LCOOKIES_FIELD_SERVICE_ALIAS_DESC"
+			hint="JFIELD_ALIAS_PLACEHOLDER"
+			maxlength="100"
+		/>
+		<field
+			name="category_id"
+			type="lcookiescategory"
+			label="COM_LCOOKIES_FIELD_CATEGORY_LABEL"
+			required="true"
+			filter="integer"
+			>
+			<option value="">COM_LCOOKIES_SELECT_CATEGORY</option>
+		</field>
+		<field
+			name="provider"
+			type="text"
+			label="COM_LCOOKIES_FIELD_PROVIDER_LABEL"
+			description="COM_LCOOKIES_FIELD_PROVIDER_DESC"
+			maxlength="255"
+		/>
+		<field
+			name="privacy_url"
+			type="url"
+			label="COM_LCOOKIES_FIELD_PRIVACY_URL_LABEL"
+			description="COM_LCOOKIES_FIELD_PRIVACY_URL_DESC"
+			validate="url"
+			schemes="http,https"
+			filter="url"
+			maxlength="2048"
+		/>
+		<field
+			name="description"
+			type="textarea"
+			label="JGLOBAL_DESCRIPTION"
+			description="COM_LCOOKIES_FIELD_DESCRIPTION_DESC"
+			rows="4"
+			filter="safehtml"
+		/>
+		<field
+			name="state"
+			type="list"
+			label="JSTATUS"
+			class="form-select-color-state"
+			default="1"
+			validate="options"
+			filter="integer"
+			>
+			<option value="1">JPUBLISHED</option>
+			<option value="0">JUNPUBLISHED</option>
+			<option value="-2">JTRASHED</option>
+		</field>
+	</fieldset>
+
+	<fieldset name="blocking" label="COM_LCOOKIES_FIELDSET_BLOCKING" description="COM_LCOOKIES_FIELDSET_BLOCKING_DESC">
+		<field
+			name="block_patterns"
+			type="textarea"
+			label="COM_LCOOKIES_FIELD_BLOCK_PATTERNS_LABEL"
+			description="COM_LCOOKIES_FIELD_BLOCK_PATTERNS_DESC"
+			rows="6"
+			class="font-monospace"
+			hint="googletagmanager.com/gtag/js"
+			filter="raw"
+		/>
+	</fieldset>
+
+	<fieldset name="code" label="COM_LCOOKIES_FIELDSET_CODE" description="COM_LCOOKIES_FIELDSET_CODE_DESC">
+		<field
+			name="head_code"
+			type="editor"
+			label="COM_LCOOKIES_FIELD_HEAD_CODE_LABEL"
+			description="COM_LCOOKIES_FIELD_HEAD_CODE_DESC"
+			editor="codemirror|none"
+			buttons="false"
+			syntax="html"
+			height="250"
+			filter="raw"
+		/>
+		<field
+			name="body_code"
+			type="editor"
+			label="COM_LCOOKIES_FIELD_BODY_CODE_LABEL"
+			description="COM_LCOOKIES_FIELD_BODY_CODE_DESC"
+			editor="codemirror|none"
+			buttons="false"
+			syntax="html"
+			height="250"
+			filter="raw"
+		/>
+	</fieldset>
+</form>
