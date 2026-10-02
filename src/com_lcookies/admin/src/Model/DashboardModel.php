@@ -14,7 +14,9 @@ use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Factory;
 use Joomla\CMS\MVC\Model\BaseDatabaseModel;
 use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\CMS\Uri\Uri;
 use Lcsilva\Component\Lcookies\Administrator\Consent\ConsentLog;
+use Lcsilva\Component\Lcookies\Administrator\Helper\CookieDomain;
 use Lcsilva\Component\Lcookies\Administrator\Helper\LcookiesHelper;
 
 // phpcs:disable PSR1.Files.SideEffects
@@ -192,6 +194,12 @@ class DashboardModel extends BaseDatabaseModel
 
         if (!$params->get('log_consents', 1)) {
             $alerts[] = ['info', 'COM_LCOOKIES_ALERT_LOGGING_OFF', '', 'index.php?option=com_config&view=component&component=com_lcookies'];
+        }
+
+        $domain = (string) $params->get('cookie_domain', '');
+
+        if ($domain !== '' && !CookieDomain::matches(CookieDomain::normalize($domain), (new Uri(Uri::root()))->getHost())) {
+            $alerts[] = ['warning', 'COM_LCOOKIES_ALERT_COOKIE_DOMAIN', $domain, 'index.php?option=com_config&view=component&component=com_lcookies'];
         }
 
         if (!(int) $params->get('privacy_menuitem', 0)) {

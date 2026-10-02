@@ -115,7 +115,31 @@ check("options renders", "Policy Version" in html and "Consent Mode" in html)
 clean(html, "options")
 check("options: live preview in the appearance and texts tabs", html.count("data-lcookies-preview>") == 2 and "preview.min.js" in html)
 
+# Consent cookie domain: normalised, refused unless the site belongs to it, ignored at runtime when it does not match
+def save_options(**values):
+    page = req("?option=com_config&view=component&component=com_lcookies")
+    data = {"jform[policy_version]": "1", "jform[consent_expiry_days]": "180", "component": "com_lcookies", "task": "component.apply",
+            "id": re.search(r'name="id" value="(\d+)"', page).group(1), token(page): "1"}
+    data.update({f"jform[{k}]": v for k, v in values.items()})
+    return req("?option=com_config", data)
+
+
+params_saved = sql("SELECT params FROM jos_extensions WHERE element = 'com_lcookies' AND type = 'component'")
+html = save_options(cookie_domain="https://WWW.Example.com:8080/path")
+check("cookie domain of another site refused, normalised in the message", "does not belong to the consent cookie domain .www.example.com" in html
+      and "example.com" not in sql("SELECT params FROM jos_extensions WHERE element = 'com_lcookies' AND type = 'component'"), str(messages(html)))
+html = save_options(cookie_domain="not a domain!")
+check("cookie domain that is not a domain name refused", "is not a domain name" in html, str(messages(html)))
+set_params = lambda params: sql("UPDATE jos_extensions SET params = '" + params.replace("'", "''") + "' WHERE element = 'com_lcookies' AND type = 'component'")
+set_params(json.dumps(dict(json.loads(params_saved or "{}"), cookie_domain=".example.com")))
+html = req("?option=com_lcookies&view=dashboard")
+check("dashboard alert: cookie domain does not match the site", 'data-lcookies-alert="cookie_domain"' in html, re.findall(r'data-lcookies-alert="(\w+)"', html))
+page = urllib.request.urlopen(BASE + "/").read().decode("utf-8", "replace")
+check("cookie domain not used where it does not match", '"cookie":{"name":"lcookies_consent","domain":""}' in page)
+set_params(params_saved)
+
 # Live preview: renders unsaved options with the frontend layouts, nothing else
+html = req("?option=com_config&view=component&component=com_lcookies")
 ptok = re.search(r'"com_lcookies.preview":\{[^}]*"token":"([a-f0-9]{32})"', html)
 ptok = ptok.group(1) if ptok else ""
 params_before = sql("SELECT params FROM jos_extensions WHERE element = 'com_lcookies' AND type = 'component'")

@@ -55,17 +55,27 @@ const grantedOptional = () => optional.filter((cat) => api.hasConsent(cat));
 
 function writeCookie(consent) {
   const { name, domain } = contract.cookie;
-  let cookie = `${name}=${encodeURIComponent(JSON.stringify(consent))}; Max-Age=${contract.expiryDays * 86400}; Path=/; SameSite=Lax`;
+  const value = encodeURIComponent(JSON.stringify(consent));
+  const secure = window.location.protocol === 'https:' ? '; Secure' : '';
+  const write = (scope) => {
+    document.cookie = `${name}=${value}; Max-Age=${contract.expiryDays * 86400}; Path=/${scope}; SameSite=Lax${secure}`;
+  };
 
   if (domain) {
-    cookie += `; Domain=${domain}`;
+    // A cookie of this host only (written before the domain was set) would shadow the shared one.
+    document.cookie = `${name}=; Max-Age=0; Path=/${secure}`;
+    write(`; Domain=${domain}`);
+
+    // Refused by the browser (e.g. a public suffix): keep the choice on this host at least.
+    if (api._readConsent()?.ts !== consent.ts) {
+      console.warn(`LCookies: the browser refused the consent cookie for the domain ${domain}; check the option "Consent Cookie Domain".`);
+      write('');
+    }
+
+    return;
   }
 
-  if (window.location.protocol === 'https:') {
-    cookie += '; Secure';
-  }
-
-  document.cookie = cookie;
+  write('');
 }
 
 function send(consent, action) {

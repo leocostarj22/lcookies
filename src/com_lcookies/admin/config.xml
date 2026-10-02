@@ -3,7 +3,7 @@
 	<help key="LCookies:_Options" />
 	<inlinehelp button="show" />
 
-	<fieldset name="general" label="COM_LCOOKIES_CONFIG_GENERAL" description="COM_LCOOKIES_CONFIG_GENERAL_DESC">
+	<fieldset name="general" label="COM_LCOOKIES_CONFIG_GENERAL" description="COM_LCOOKIES_CONFIG_GENERAL_DESC" addruleprefix="Lcsilva\Component\Lcookies\Administrator\Rule">
 		<field
 			name="policy_version"
 			type="number"
@@ -42,7 +42,8 @@
 			label="COM_LCOOKIES_CONFIG_COOKIE_DOMAIN_LABEL"
 			description="COM_LCOOKIES_CONFIG_COOKIE_DOMAIN_DESC"
 			hint=".example.com"
-			filter="string"
+			filter="Lcsilva\Component\Lcookies\Administrator\Helper\CookieDomain::filter"
+			validate="cookiedomain"
 		/>
 		<field
 			name="respect_gpc"

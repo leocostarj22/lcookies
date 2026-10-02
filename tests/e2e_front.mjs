@@ -530,6 +530,65 @@ async function main() {
     }
     fixture('enable', 'system', 'guidedtours', tours);
 
+    /* 17. Consent shared between subdomains (cookie_domain) ------------------------------------ */
+    console.log('Shared consent between subdomains');
+    const port = new URL(url).port;
+    const hostsBrowser = await chromium.launch({
+      executablePath: CHROME, args: ['--host-resolver-rules=MAP *.lctest.test 127.0.0.1, MAP *.lctest.co.uk 127.0.0.1'],
+    });
+    const at = (host) => `http://${host}:${port}/`;
+    const visit = async (ctx, host) => {
+      const tab = await ctx.newPage();
+      tab.warnings = [];
+      tab.on('console', (msg) => { if (msg.type() === 'warning') tab.warnings.push(msg.text()); });
+      await tab.goto(at(host));
+      await ready(tab);
+      return tab;
+    };
+
+    // Test sites served by `php -S` set $live_site, which redirects requests for other hosts.
+    const liveSite = fixture('livesite', '').trim();
+
+    try {
+      fixture('params', 'cookie_domain=.lctest.test');
+      let shared = await hostsBrowser.newContext();
+      let tab = await visit(shared, 'www.lctest.test');
+      await tab.click('[data-lcookies-banner] [data-lcookies-action="accept"]');
+      const stored = (await shared.cookies(at('www.lctest.test'))).filter((c) => c.name === 'lcookies_consent');
+      check('consent cookie set for the shared domain', stored.length === 1 && stored[0].domain === '.lctest.test', JSON.stringify(stored.map((c) => c.domain)));
+      tab = await visit(shared, 'shop.lctest.test');
+      h = await helper(tab);
+      check('another subdomain knows the choice (browser and PHP)', !(await tab.isVisible('[data-lcookies-banner]'))
+        && await tab.evaluate(() => window.LCookies.hasConsent('statistics')) && h.has.statistics, JSON.stringify(h));
+      await shared.close();
+
+      // A domain the host does not belong to is not used: the choice stays on this host.
+      fixture('params', 'cookie_domain=.example.com');
+      shared = await hostsBrowser.newContext();
+      tab = await visit(shared, 'www.lctest.test');
+      await tab.click('[data-lcookies-banner] [data-lcookies-action="reject"]');
+      await tab.reload();
+      await ready(tab);
+      check('cookie domain of another site ignored: choice kept on this host', !(await tab.isVisible('[data-lcookies-banner]'))
+        && (await shared.cookies(at('www.lctest.test'))).some((c) => c.name === 'lcookies_consent' && c.domain === 'www.lctest.test'));
+      await shared.close();
+
+      // A public suffix is refused by the browser: LCookies falls back to this host and warns.
+      fixture('params', 'cookie_domain=.co.uk');
+      shared = await hostsBrowser.newContext();
+      tab = await visit(shared, 'www.lctest.co.uk');
+      await tab.click('[data-lcookies-banner] [data-lcookies-action="reject"]');
+      const warned = tab.warnings.some((w) => w.includes('refused the consent cookie'));
+      await tab.reload();
+      await ready(tab);
+      check('cookie refused by the browser: choice kept on this host, with a warning', warned && !(await tab.isVisible('[data-lcookies-banner]')), tab.warnings.join(' | '));
+      await shared.close();
+    } finally {
+      fixture('params', 'cookie_domain=');
+      fixture('livesite', liveSite);
+      await hostsBrowser.close();
+    }
+
     // Scan mode seen by a page: PHP (ConsentHelper) and JavaScript agree, nothing is shown or stored.
     const scanVisit = await browser.newContext();
     page = await scanVisit.newPage();

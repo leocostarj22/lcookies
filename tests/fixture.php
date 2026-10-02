@@ -22,6 +22,8 @@
  *                                                        then replaces them with json if given
  *   php tests/fixture.php <joomla root> enable <folder> <element> <0|1>  prints whether a plugin is enabled, then
  *                                                        enables or disables it
+ *   php tests/fixture.php <joomla root> livesite [url]   prints $live_site of configuration.php, then sets it to url
+ *                                                        (empty string allowed)
  *   php tests/fixture.php <joomla root> deluser <username>  deletes a user created by `token`
  *   php tests/fixture.php <joomla root> teardown         removes everything setup added (and all consent records)
  *
@@ -31,8 +33,8 @@
 [$script, $root, $command] = $argv + [null, null, null];
 $args = array_slice($argv, 3);
 
-if (!$root || !is_file($root . '/configuration.php') || !in_array($command, ['setup', 'params', 'consents', 'events', 'token', 'asset', 'plugin', 'enable', 'deluser', 'teardown'], true)) {
-    fwrite(STDERR, "Usage: php tests/fixture.php <joomla root> setup|params|consents|events|token|asset|plugin|enable|deluser|teardown [key=value ...]\n");
+if (!$root || !is_file($root . '/configuration.php') || !in_array($command, ['setup', 'params', 'consents', 'events', 'token', 'asset', 'plugin', 'enable', 'livesite', 'deluser', 'teardown'], true)) {
+    fwrite(STDERR, "Usage: php tests/fixture.php <joomla root> setup|params|consents|events|token|asset|plugin|enable|livesite|deluser|teardown [key=value ...]\n");
     exit(1);
 }
 
@@ -153,6 +155,19 @@ if ($command === 'plugin') {
 
     if ($params !== null) {
         run($db, "UPDATE {$p}extensions SET params = ? WHERE type = 'plugin' AND folder = ? AND element = ?", [$params, $folder, $element]);
+    }
+
+    exit;
+}
+
+if ($command === 'livesite') {
+    $file = $root . '/configuration.php';
+    $code = (string) file_get_contents($file);
+    preg_match("/public \\\$live_site = '([^']*)';/", $code, $m);
+    echo $m[1] ?? '', "\n";
+
+    if (isset($args[0])) {
+        file_put_contents($file, preg_replace("/public \\\$live_site = '[^']*';/", "public \\\$live_site = '" . addcslashes($args[0], "'\\\\") . "';", $code));
     }
 
     exit;

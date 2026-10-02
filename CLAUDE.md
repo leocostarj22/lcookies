@@ -6,7 +6,7 @@ Sistema de consentimento de cookies para Joomla 5.x e 6.x. Plano completo: `docs
 - **Fase concluída:** 5 — Extras (v0.5.0; ver `docs/fases/fase-5.md`). Releases anteriores: 0.1.0–0.4.0; servidor de atualizações ativo.
 - **Testes:** admin 124/124, API 42/42, front 106/106, idioma 12/12 nos 4 sites de teste; atualização 0.4.0 → 0.5.0 testada (MariaDB e PostgreSQL).
 - **Onde parámos (2026-10-02):** commit `chore(release): 0.5.0` feito; o autor cria e envia a tag `v0.5.0` (a Action publica a release).
-  - **Em curso (autor: "avance com a sequência sugerida"):** extras antes da 1.0 (v0.6.0) — CSP feito; a seguir consentimento entre subdomínios e histórico das versões da política; depois a Fase 6 — Qualidade.
+  - **Em curso (autor: "avance com a sequência sugerida"):** extras antes da 1.0 (v0.6.0) — CSP e consentimento entre subdomínios feitos; a seguir o histórico das versões da política; depois a Fase 6 — Qualidade.
   - Testes e desenvolvimento só neste ambiente (sem testes em sites externos).
 
 ## Fluxo de trabalho por fase

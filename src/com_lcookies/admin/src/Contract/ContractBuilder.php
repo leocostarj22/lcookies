@@ -16,6 +16,7 @@ use Joomla\CMS\Uri\Uri;
 use Joomla\Database\DatabaseInterface;
 use Joomla\Database\ParameterType;
 use Joomla\Registry\Registry;
+use Lcsilva\Component\Lcookies\Administrator\Helper\CookieDomain;
 use Lcsilva\Component\Lcookies\Administrator\Helper\LcookiesHelper;
 
 // phpcs:disable PSR1.Files.SideEffects
@@ -120,7 +121,7 @@ final class ContractBuilder
             'expiryDays'        => min(395, max(1, (int) $params->get('consent_expiry_days', 180))),
             'cookie'            => [
                 'name'   => self::COOKIE_NAME,
-                'domain' => trim((string) $params->get('cookie_domain', '')),
+                'domain' => $this->cookieDomain(),
             ],
             'endpoint'          => $params->get('log_consents', 1) ? Uri::root(true) . '/' . self::ENDPOINT : null,
             'layout'            => $this->option('layout', ['bar-bottom', 'bar-top', 'box-bottom-left', 'box-bottom-right', 'modal'], 'box-bottom-left'),
@@ -134,6 +135,20 @@ final class ContractBuilder
             'categories'        => $this->categories(),
             'texts'             => $this->texts(),
         ];
+    }
+
+    /**
+     * Domain of the consent cookie for the host of the request: the option when the host belongs
+     * to it, otherwise empty (cookie of the current host). Browsers refuse a cookie for a domain the
+     * page is not on, so a staging copy or another domain of the same site keeps working.
+     *
+     * @return  string
+     */
+    private function cookieDomain(): string
+    {
+        $domain = CookieDomain::normalize($this->params->get('cookie_domain', ''));
+
+        return CookieDomain::matches($domain, Uri::getInstance()->getHost()) ? $domain : '';
     }
 
     /**

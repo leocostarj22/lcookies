@@ -89,6 +89,23 @@ No modo de pré-visualização não se lê nem grava a escolha, não se envia re
 
 A página aparece num `iframe` com `srcdoc`, por isso herda a política de segurança de conteúdo (CSP) do backend. Com nonces, o `preview.js` envia o nonce da página e a pré-visualização usa-o (ver abaixo).
 
+## Consentimento partilhado entre subdomínios
+
+Para que uma escolha feita em `www.exemplo.pt` valha também em `loja.exemplo.pt`:
+1. Instale o LCookies nos dois sites.
+2. Em cada um, indique em *Opções → Geral → Domínio do cookie de consentimento* o domínio comum: `.exemplo.pt`.
+3. Use nos dois a **mesma versão da política** e os **mesmos aliases de categorias**. Uma versão diferente faz o outro site voltar a perguntar; uma categoria que só existe num dos sites é ignorada no outro.
+
+**Ao guardar as opções:**
+- o valor é normalizado (`https://www.Exemplo.pt/` passa a `.www.exemplo.pt`);
+- é recusado se não for um nome de domínio ou se o endereço do site não lhe pertencer.
+
+**Em cada pedido:** o domínio só é usado quando o host da página lhe pertence. Uma cópia de testes noutro endereço continua a funcionar, com o cookie só desse host, e o painel mostra um alerta.
+
+**Se o browser recusar o cookie** (por exemplo um sufixo público como `.co.uk`), o LCookies grava a escolha só para o host atual e deixa um aviso na consola. Também apaga a cópia antiga do cookie que existia só para o host, para não ficarem dois cookies com o mesmo nome.
+
+Cada site guarda os seus próprios registos de consentimento. O id do consentimento é o mesmo nos dois sites, por isso a prova pode ser cruzada.
+
 ## Content-Security-Policy
 
 O LCookies funciona com a CSP do plugin *Sistema - Cabeçalhos HTTP* do Joomla, nos dois modos:

@@ -206,7 +206,8 @@ final class Lcookies extends CMSPlugin implements SubscriberInterface
     {
         $cache = Factory::getContainer()->get(CacheControllerFactoryInterface::class)
             ->createCacheController('output', ['defaultgroup' => 'com_lcookies']);
-        $key   = 'contract.' . md5($tag . '|' . Uri::root() . '|' . $params->toString());
+        // The host is part of the key: the cookie domain depends on it (ContractBuilder::cookieDomain()).
+        $key   = 'contract.' . md5($tag . '|' . Uri::root() . '|' . Uri::getInstance()->getHost() . '|' . $params->toString());
         $data  = $cache->get($key);
 
         if (\is_array($data) && isset($data['contract']['schema']) && $data['contract']['schema'] === ContractBuilder::SCHEMA) {

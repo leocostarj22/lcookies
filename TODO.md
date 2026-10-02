@@ -71,8 +71,8 @@ Ao fechar uma fase: marcar tudo, preencher `docs/fases/fase-N.md` e atualizar o 
 
 ## Extras antes da 1.0 (v0.6.0)
 - [x] Content-Security-Policy: nonce nos scripts ativados após consentimento e na pré-visualização; hash do script inicial no modo hashes
-- [ ] Consentimento partilhado entre subdomínios (UX e validação de `cookie_domain`) ← próximo
-- [ ] Histórico das versões da política no painel
+- [x] Consentimento partilhado entre subdomínios (normalização e validação de `cookie_domain`, só usado nos hosts do domínio, recurso ao host atual se o browser recusar, alerta no painel)
+- [ ] Histórico das versões da política no painel ← próximo
 
 ## Fase 6 — Qualidade
 - [ ] Ambiente Docker J5.x e J6.x
