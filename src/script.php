@@ -88,13 +88,18 @@ class Pkg_LcookiesInstallerScript extends InstallerScript
     /**
      * Enables the plugins installed for the first time and adds missing mail templates.
      *
-     * @param   string            $type    install, update or discover_install.
+     * @param   string            $type    install, update, discover_install or uninstall.
      * @param   InstallerAdapter  $parent  The adapter.
      *
      * @return  void
      */
     public function postflight($type, $parent)
     {
+        // Joomla also runs postflight after an uninstall: nothing to enable or add then.
+        if ($type === 'uninstall') {
+            return;
+        }
+
         $db = Factory::getContainer()->get(DatabaseInterface::class);
 
         foreach ($this->newPlugins as $plugin) {
