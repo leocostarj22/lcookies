@@ -48,7 +48,7 @@ $category  = [
                     <tr>
                         <th scope="row">
                             <?php echo $this->escape($preset['title']); ?>
-                            <div class="small text-muted"><?php echo $this->escape(LcookiesHelper::text($preset['description'])); ?></div>
+                            <div class="small"><?php echo $this->escape(LcookiesHelper::text($preset['description'])); ?></div>
                             <?php if ($preset['provider']) : ?>
                                 <div class="small"><?php echo $this->escape($preset['provider']); ?></div>
                             <?php endif; ?>
@@ -93,7 +93,7 @@ $category  = [
                         <div class="form-check mb-3">
                             <input class="form-check-input" type="checkbox" id="overwrite" name="overwrite" value="1">
                             <label class="form-check-label" for="overwrite"><?php echo Text::_('COM_LCOOKIES_TRANSFER_OVERWRITE'); ?></label>
-                            <div class="small text-muted"><?php echo Text::_('COM_LCOOKIES_TRANSFER_OVERWRITE_DESC'); ?></div>
+                            <div class="small"><?php echo Text::_('COM_LCOOKIES_TRANSFER_OVERWRITE_DESC'); ?></div>
                         </div>
                         <button type="submit" class="btn btn-primary">
                             <span class="icon-upload" aria-hidden="true"></span> <?php echo Text::_('COM_LCOOKIES_TRANSFER_IMPORT'); ?>

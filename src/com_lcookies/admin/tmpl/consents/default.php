@@ -123,9 +123,9 @@ $actions   = [
                                     <td class="d-none d-md-table-cell">
                                         <?php if ($item->user_id) : ?>
                                             <?php echo $this->escape($item->user_name ?? Text::_('COM_LCOOKIES_USER_DELETED')); ?>
-                                            <div class="small text-muted"><?php echo Text::_('JGRID_HEADING_ID'); ?>: <?php echo (int) $item->user_id; ?></div>
+                                            <div class="small"><?php echo Text::_('JGRID_HEADING_ID'); ?>: <?php echo (int) $item->user_id; ?></div>
                                         <?php else : ?>
-                                            <span class="text-muted"><?php echo Text::_('COM_LCOOKIES_USER_GUEST'); ?></span>
+                                            <span><?php echo Text::_('COM_LCOOKIES_USER_GUEST'); ?></span>
                                         <?php endif; ?>
                                     </td>
                                     <td class="d-none d-lg-table-cell text-break">

@@ -430,6 +430,27 @@ async function main() {
     check("scan keeps the administrator's own choice", kept && kept.value === ownChoice, kept && kept.value);
     check('no JavaScript errors (scanner)', adminErrors.length === 0, adminErrors.join(' | '));
 
+    /* 14b. Accessibility of the backend pages (WCAG 2.2 A/AA, content of LCookies only) ---------- */
+    console.log('Backend accessibility');
+    const backendPages = [['dashboard', 'view=dashboard'], ['categories', 'view=categories'], ['services', 'view=services'],
+      ['cookies', 'view=cookies'], ['library', 'view=presets'], ['consents', 'view=consents'], ['scanner', 'view=scanner'],
+      ['service form', 'task=service.edit&id=1'], ['cookie form', 'task=cookie.edit&id=1'], ['category form', 'task=category.edit&id=3']];
+    for (const [name, query] of backendPages) {
+      await admin.goto(`${url}/administrator/index.php?option=com_lcookies&${query}`);
+      await admin.evaluate(AXE);
+      const result = await admin.evaluate(() => window.axe.run({
+        include: [['#content']],
+        // Disabled state toggles of the core (JGrid) put aria-labelledby on a span, in every Joomla list.
+        exclude: [['span[aria-labelledby^="cb"]']],
+      }, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] }, resultTypes: ['violations'] }));
+      const found = result.violations.map((v) => `${v.id} (${v.nodes.length}: ${v.nodes[0].target.join(' ')})`);
+      check(`axe: backend ${name} without violations`, found.length === 0, found.join(', '));
+      if (query.startsWith('task=')) {
+        // Close the form so that the record is checked in again.
+        await Promise.all([admin.waitForNavigation(), admin.click('#toolbar-cancel button, joomla-toolbar-button#toolbar-cancel')]);
+      }
+    }
+
     /* 15. Live preview in the options ---------------------------------------------------------- */
     console.log('Live preview');
     const paramsBefore = fixture('params').trim();

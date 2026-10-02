@@ -61,7 +61,7 @@ $cards = [
                 <div class="card-body">
                     <span class="d-block display-6"><?php echo (int) $summary['policyVersion']; ?></span>
                     <span class="d-block"><?php echo Text::_('COM_LCOOKIES_HEADING_POLICY_VERSION'); ?></span>
-                    <span class="d-block small text-muted">
+                    <span class="d-block small">
                         <?php echo Text::_('COM_LCOOKIES_DASHBOARD_CONSENT_MODE'); ?>:
                         <?php echo Text::_($summary['consentMode'] ? 'JYES' : 'JNO'); ?>
                     </span>
@@ -80,7 +80,7 @@ $cards = [
                 <?php else : ?>
                     <p>
                         <?php echo Text::sprintf('COM_LCOOKIES_DASHBOARD_TOTALS', $stats['total'], $stats['consents']); ?>
-                        <a href="<?php echo Route::_('index.php?option=com_lcookies&view=consents'); ?>"><?php echo Text::_('COM_LCOOKIES_MENU_CONSENTS_LINK'); ?></a>
+                        <a class="text-decoration-underline" href="<?php echo Route::_('index.php?option=com_lcookies&view=consents'); ?>"><?php echo Text::_('COM_LCOOKIES_MENU_CONSENTS_LINK'); ?></a>
                     </p>
 
                     <div class="row">
@@ -115,7 +115,7 @@ $cards = [
                                     </div>
                                 </div>
                             <?php endforeach; ?>
-                            <p class="small text-muted"><?php echo Text::_('COM_LCOOKIES_DASHBOARD_ACCEPTANCE_DESC'); ?></p>
+                            <p class="small"><?php echo Text::_('COM_LCOOKIES_DASHBOARD_ACCEPTANCE_DESC'); ?></p>
                         </div>
                     </div>
 
@@ -133,7 +133,7 @@ $cards = [
                             <tr><th scope="row"><?php echo HTMLHelper::_('date', $day, Text::_('DATE_FORMAT_LC4'), null); ?></th><td><?php echo (int) $count; ?></td></tr>
                         <?php endforeach; ?>
                     </table>
-                    <p class="small text-muted mt-1"><?php echo Text::_('COM_LCOOKIES_DASHBOARD_UTC'); ?></p>
+                    <p class="small mt-1"><?php echo Text::_('COM_LCOOKIES_DASHBOARD_UTC'); ?></p>
                 <?php endif; ?>
             </div>
         </section>
@@ -143,8 +143,8 @@ $cards = [
         <section class="card mb-4" aria-labelledby="lcookies-policies">
             <div class="card-body">
                 <h2 id="lcookies-policies" class="h4"><?php echo Text::_('COM_LCOOKIES_DASHBOARD_POLICIES'); ?></h2>
-                <p class="small text-muted"><?php echo Text::_('COM_LCOOKIES_DASHBOARD_POLICIES_DESC'); ?></p>
-                <div class="table-responsive">
+                <p class="small"><?php echo Text::_('COM_LCOOKIES_DASHBOARD_POLICIES_DESC'); ?></p>
+                <div class="table-responsive" role="region" aria-labelledby="lcookies-policies" tabindex="0">
                     <table class="table table-sm align-middle mb-0" id="lcookies-policy-history">
                         <caption class="visually-hidden"><?php echo Text::_('COM_LCOOKIES_DASHBOARD_POLICIES'); ?></caption>
                         <thead>

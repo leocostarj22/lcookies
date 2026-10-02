@@ -68,7 +68,7 @@ class LcookiespreviewField extends FormField
             . '<div class="lcookies-preview__frame border rounded">'
             . '<iframe title="' . htmlspecialchars(Text::_('COM_LCOOKIES_PREVIEW_LABEL'), ENT_QUOTES, 'UTF-8') . '"></iframe>'
             . '</div>'
-            . '<p class="small text-muted mt-2 mb-0">' . Text::_('COM_LCOOKIES_PREVIEW_DESC') . '</p>'
+            . '<p class="small mt-2 mb-0">' . Text::_('COM_LCOOKIES_PREVIEW_DESC') . '</p>'
             . '</div>';
     }
 }

@@ -133,12 +133,12 @@ if ($saveOrder && !empty($this->items)) {
                                             <span class="icon-lock" aria-hidden="true"></span>
                                             <span class="visually-hidden"><?php echo Text::_('JYES'); ?></span>
                                         <?php else : ?>
-                                            <span class="text-muted">&mdash;</span>
+                                            <span>&mdash;</span>
                                         <?php endif; ?>
                                     </td>
                                     <td class="d-none d-lg-table-cell">
                                         <?php foreach ($gcmTypes as $type) : ?>
-                                            <span class="badge bg-info text-dark"><?php echo $this->escape($type); ?></span>
+                                            <span class="badge bg-info"><?php echo $this->escape($type); ?></span>
                                         <?php endforeach; ?>
                                     </td>
                                     <td class="text-center d-none d-md-table-cell">

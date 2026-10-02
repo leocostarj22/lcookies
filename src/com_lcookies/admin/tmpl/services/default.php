@@ -145,7 +145,7 @@ if ($saveOrder && !empty($this->items)) {
                                         <?php if ($patterns) : ?>
                                             <span class="badge bg-warning text-dark"><?php echo Text::plural('COM_LCOOKIES_N_PATTERNS', $patterns); ?></span>
                                         <?php else : ?>
-                                            <span class="text-muted">&mdash;</span>
+                                            <span>&mdash;</span>
                                         <?php endif; ?>
                                     </td>
                                     <td class="text-center d-none d-md-table-cell">

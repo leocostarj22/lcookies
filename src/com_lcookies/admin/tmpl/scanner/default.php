@@ -75,7 +75,7 @@ $suggestion = function (array $entry, string $actions = '') use ($token): string
                 </div>
                 <div class="visually-hidden" data-lcookies-scan-frames aria-hidden="true"></div>
             <?php else : ?>
-                <p class="mb-0 text-muted"><?php echo Text::_('COM_LCOOKIES_SCAN_NOT_ALLOWED'); ?></p>
+                <p class="mb-0"><?php echo Text::_('COM_LCOOKIES_SCAN_NOT_ALLOWED'); ?></p>
             <?php endif; ?>
         </div>
     </section>
@@ -108,11 +108,11 @@ $suggestion = function (array $entry, string $actions = '') use ($token): string
                 <div class="alert alert-success"><?php echo Text::_('COM_LCOOKIES_SCAN_ALL_GOOD'); ?></div>
             <?php endif; ?>
 
-            <h3 class="h5"><?php echo Text::_('COM_LCOOKIES_SCAN_ITEMS'); ?></h3>
+            <h3 class="h5" id="lcookies-scan-items-title"><?php echo Text::_('COM_LCOOKIES_SCAN_ITEMS'); ?></h3>
             <?php if (empty($results['items'])) : ?>
                 <p><?php echo Text::_('COM_LCOOKIES_SCAN_NO_ITEMS'); ?></p>
             <?php else : ?>
-                <div class="table-responsive">
+                <div class="table-responsive" role="region" aria-labelledby="lcookies-scan-items-title" tabindex="0">
                     <table class="table table-sm align-middle" id="lcookies-scan-items">
                         <caption class="visually-hidden"><?php echo Text::_('COM_LCOOKIES_SCAN_ITEMS'); ?></caption>
                         <thead>
@@ -157,9 +157,9 @@ $suggestion = function (array $entry, string $actions = '') use ($token): string
             <?php endif; ?>
 
             <?php if (!empty($results['requests'])) : ?>
-                <h3 class="h5"><?php echo Text::_('COM_LCOOKIES_SCAN_REQUESTS'); ?></h3>
-                <p class="small text-muted"><?php echo Text::_('COM_LCOOKIES_SCAN_REQUESTS_DESC'); ?></p>
-                <div class="table-responsive">
+                <h3 class="h5" id="lcookies-scan-requests-title"><?php echo Text::_('COM_LCOOKIES_SCAN_REQUESTS'); ?></h3>
+                <p class="small"><?php echo Text::_('COM_LCOOKIES_SCAN_REQUESTS_DESC'); ?></p>
+                <div class="table-responsive" role="region" aria-labelledby="lcookies-scan-requests-title" tabindex="0">
                     <table class="table table-sm align-middle" id="lcookies-scan-requests">
                         <caption class="visually-hidden"><?php echo Text::_('COM_LCOOKIES_SCAN_REQUESTS'); ?></caption>
                         <thead>
@@ -211,7 +211,7 @@ $suggestion = function (array $entry, string $actions = '') use ($token): string
     <?php if (\count($this->history) > 1) : ?>
         <section aria-labelledby="lcookies-scan-history">
             <h2 id="lcookies-scan-history" class="h4"><?php echo Text::_('COM_LCOOKIES_SCAN_HISTORY'); ?></h2>
-            <div class="table-responsive">
+            <div class="table-responsive" role="region" aria-labelledby="lcookies-scan-history" tabindex="0">
                 <table class="table table-sm">
                     <thead>
                         <tr>

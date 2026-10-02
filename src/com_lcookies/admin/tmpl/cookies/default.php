@@ -128,7 +128,7 @@ if ($saveOrder && !empty($this->items)) {
                                         <?php if ($item->source === 'scanner') : ?>
                                             <span class="badge bg-warning text-dark"><?php echo Text::_('COM_LCOOKIES_SOURCE_SCANNER'); ?></span>
                                         <?php elseif (\in_array($item->source, ['preset', 'import'], true)) : ?>
-                                            <span class="badge bg-info text-dark"><?php echo Text::_('COM_LCOOKIES_SOURCE_' . strtoupper($item->source)); ?></span>
+                                            <span class="badge bg-info"><?php echo Text::_('COM_LCOOKIES_SOURCE_' . strtoupper($item->source)); ?></span>
                                         <?php endif; ?>
                                         <?php if ($item->domain) : ?>
                                             <div class="small"><?php echo Text::_('COM_LCOOKIES_FIELD_DOMAIN_LABEL'); ?>: <?php echo $this->escape($item->domain); ?></div>
