@@ -92,7 +92,8 @@ python3 build/build.py     # dist/pkg_lcookies-<versão>.zip e dist/pkg_lcookies
 Os testes alteram dados, por isso só devem correr em sites de teste:
 - `tests/e2e_admin.py` testa o backoffice;
 - `tests/e2e_api.py` testa a API;
-- `tests/e2e_front.mjs` testa o frontend num browser real, com Playwright e axe.
+- `tests/e2e_front.mjs` testa o frontend num browser real, com Playwright e axe, incluindo o scanner e a pré-visualização;
+- `tests/e2e_lang.mjs` confirma que tudo o que o visitante vê está no idioma do site (pt-PT ou en-GB).
 
 Ver as notas em `docs/fases/`.
 

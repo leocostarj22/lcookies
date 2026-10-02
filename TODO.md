@@ -62,7 +62,7 @@ Ao fechar uma fase: marcar tudo, preencher `docs/fases/fase-N.md` e atualizar o 
 - [x] Scanner (servidor + browser sem consentimento + browser com tudo aceite; `#__lcookies_scans`, ACL `lcookies.scan`, modo de scan com token no `plg_system`, sugestões da biblioteca, alertas no painel) + rotina `lcookies.scan` com template de e-mail
 - [x] Dashboard com estatísticas (vista por omissão: totais, escolhas e aceitação por categoria em 30 dias, alertas de configuração)
 - [x] Pré-visualização em tempo real nas opções (separadores Aparência e Textos; layouts/CSS/JS do frontend em modo `preview`; computador e telemóvel)
-- [ ] Validar as traduções pt-PT do frontend num site com o pacote de idioma pt-PT instalado ← próximo
+- [x] Validar as traduções pt-PT do frontend num site com o pacote de idioma pt-PT instalado (`tests/e2e_lang.mjs`; "site" em vez de "website", "ligação" em vez de "link", estatísticas sem a promessa de anonimato)
 - [x] `mod_lcookies` (botão de preferências, escolha atual preenchida em JS, link para a política)
 - [x] `plg_content_lcookies` ({lcookies-table}, {lcookies-settings}; layouts `lcookies.policy`/`lcookies.settings`)
 - [x] `plg_task_lcookies` (rotina `lcookies.purge`: elimina os registos expirados; `lcookies.scan`: scan agendado com e-mail)

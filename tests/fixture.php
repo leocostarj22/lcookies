@@ -216,7 +216,7 @@ $cookie = "INSERT INTO {$p}lcookies_cookies (service_id, name, match_type, type,
     VALUES (?, ?, ?, ?, '', ?, ?, ?, 1, ?, ?, ?)";
 
 run($db, $cookie, [SVC_STATS, '_lc_test_', 'prefix', 'cookie', 2, 'year', 'Distinguishes users.', 1, $now, $now]);
-run($db, $cookie, [SVC_STATS, 'lc_test_ls', 'exact', 'local', 0, 'session', 'Local storage of the test.', 2, $now, $now]);
+run($db, $cookie, [SVC_STATS, 'lc_test_ls', 'exact', 'local', 0, 'session', 'Test storage key.', 2, $now, $now]);
 
 $content = <<<'HTML'
 <div id="lctest">

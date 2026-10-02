@@ -9,7 +9,7 @@ Sistema de consentimento de cookies para Joomla 5.x e 6.x. Plano completo: `docs
   - **Testes:** admin 89/89, API 42/42, front 83/83 nos 4 sites de teste.
 - **Onde parámos (2026-10-01):**
   - **Em teste pelo autor:** `dist/pkg_lcookies-0.5.0-dev.zip` num site externo. Começar por recolher o que encontrou.
-  - **A seguir:** a validação do pt-PT, depois o fecho da fase.
+  - **A seguir:** fecho da fase (versões 0.5.0, nota do README, `docs/fases/fase-5.md`, tag `v0.5.0`).
   - **Fecho da fase:**
     - subir todas as versões para 0.5.0;
     - retirar do README a nota "A release publicada é a 0.4.0…";
@@ -28,6 +28,7 @@ Sistema de consentimento de cookies para Joomla 5.x e 6.x. Plano completo: `docs
 - `tests/e2e_admin.py` — teste end-to-end do backend (ver `docs/fases/fase-1.md`).
 - `tests/e2e_front.mjs` + `tests/fixture.php` — teste do frontend num browser real, Playwright + axe-core (ver `docs/fases/fase-2.md`).
 - `tests/e2e_api.py` — teste da API Web Services (tokens/permissões via `tests/fixture.php`; ver `docs/api.md`).
+- `tests/e2e_lang.mjs <url> <root> <pt-PT|en-GB>` — o frontend só mostra textos do idioma do site (sem constantes nem restos do outro idioma); o site tem de estar nesse idioma.
 
 ## Convenções
 - Namespaces: `Lcsilva\Component\Lcookies\{Administrator,Site,Api}`, `Lcsilva\Plugin\<Grupo>\Lcookies`, `Lcsilva\Module\Lcookies`.
