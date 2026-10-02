@@ -85,15 +85,25 @@ Descarregue `pkg_lcookies-X.Y.Z.zip` da [última release](https://github.com/leo
 ## Desenvolvimento
 
 ```bash
-npm ci                     # esbuild (minificação) e ferramentas de teste
-python3 build/build.py     # dist/pkg_lcookies-<versão>.zip e dist/pkg_lcookies.xml
+npm ci                                  # esbuild (minificação) e ferramentas de teste
+python3 build/build.py                  # dist/pkg_lcookies-<versão>.zip e dist/pkg_lcookies.xml
+composer install                        # PHP-CS-Fixer e PHPStan (só desenvolvimento)
+composer cs                             # padrão de código do Joomla (composer cs-fix corrige)
+JOOMLA_PATH=/caminho/joomla composer stan   # análise estática contra uma instalação do Joomla 6
 ```
 
 Os testes alteram dados, por isso só devem correr em sites de teste:
+- `tests/install_cycle.sh` instala, atualiza a partir de uma versão anterior e desinstala, e verifica o resultado;
 - `tests/e2e_admin.py` testa o backoffice;
 - `tests/e2e_api.py` testa a API;
 - `tests/e2e_front.mjs` testa o frontend num browser real, com Playwright e axe, incluindo o scanner e a pré-visualização;
 - `tests/e2e_lang.mjs` confirma que tudo o que o visitante vê está no idioma do site (pt-PT ou en-GB).
+
+A CI ([`ci.yml`](.github/workflows/ci.yml)) corre em cada push e pull request:
+- lint em PHP 8.1–8.4;
+- padrão de código e PHPStan;
+- build;
+- todos os testes acima em Joomla 5.2, 5.4 e 6.0, com MariaDB e PostgreSQL. Cada Joomla é instalado de raiz por `tests/ci/setup-joomla.sh`, que também se pode usar localmente.
 
 Ver as notas em `docs/fases/`.
 

@@ -75,9 +75,9 @@ Ao fechar uma fase: marcar tudo, preencher `docs/fases/fase-N.md` e atualizar o 
 - [x] Histórico das versões da política no painel (escolhas, visitantes e aceitação por versão) + botão "Nova versão da política"
 
 ## Fase 6 — Qualidade
-- [ ] Ambiente Docker J5.x e J6.x
-- [ ] PHPStan / PHP-CS-Fixer (padrão Joomla)
-- [ ] Testes de instalação, atualização e desinstalação
+- [x] Ambiente de testes J5.x e J6.x na CI (GitHub Actions com MariaDB e PostgreSQL em contentores; `tests/ci/setup-joomla.sh`)
+- [x] PHPStan (nível 5) / PHP-CS-Fixer (regras do core do Joomla)
+- [x] Testes de instalação, atualização e desinstalação (`tests/install_cycle.sh`, também na CI)
 - [ ] Auditoria de acessibilidade
 - [ ] Revisão de traduções
 - [ ] Build do pacote (script) + release

@@ -21,6 +21,8 @@ Sistema de consentimento de cookies para Joomla 5.x e 6.x. Plano completo: `docs
 - `tests/e2e_admin.py` — teste end-to-end do backend (ver `docs/fases/fase-1.md`).
 - `tests/e2e_front.mjs` + `tests/fixture.php` — teste do frontend num browser real, Playwright + axe-core (ver `docs/fases/fase-2.md`).
 - `tests/e2e_api.py` — teste da API Web Services (tokens/permissões via `tests/fixture.php`; ver `docs/api.md`).
+- `tests/install_cycle.sh upgrade|uninstall <root> …` — ciclo de instalação com verificações; `tests/sql.php <root>` corre SQL na base de dados do site (MySQL/PostgreSQL); `tests/ci/setup-joomla.sh` instala um Joomla de raiz (CI e local).
+- Qualidade: `composer cs` (regras do core do Joomla, `.php-cs-fixer.dist.php`) e `JOOMLA_PATH=… composer stan` (PHPStan nível 5, `phpstan.neon`; as exceções documentadas são só lacunas de tipos do Joomla). CI: `.github/workflows/ci.yml`.
 - `tests/e2e_lang.mjs <url> <root> <pt-PT|en-GB>` — o frontend só mostra textos do idioma do site (sem constantes nem restos do outro idioma); o site tem de estar nesse idioma.
 
 ## Convenções

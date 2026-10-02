@@ -1,0 +1,150 @@
+# Continuous integration of LCookies: PHP lint, coding standard, static analysis, build, and the
+# end-to-end tests (install/upgrade/uninstall, backend, API, frontend, languages) on the supported
+# Joomla versions with MariaDB and PostgreSQL.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: PHP ${{ matrix.php }} lint
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['8.1', '8.2', '8.3', '8.4']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+      - run: find src tests build -name '*.php' -print0 | xargs -0 -n1 php -l > /dev/null
+
+  quality:
+    name: Coding standard and static analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer
+      - run: composer install --no-interaction --no-progress
+      - run: composer cs
+      - name: PHPStan against Joomla 6
+        run: |
+          mkdir -p /tmp/joomla
+          curl -sSfL https://github.com/joomla/joomla-cms/releases/download/6.0.0/Joomla_6.0.0-Stable-Full_Package.tar.gz | tar -xz -C /tmp/joomla
+          JOOMLA_PATH=/tmp/joomla composer stan
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci --no-audit --no-fund && python build/build.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: package
+          path: dist/pkg_lcookies-*.zip
+
+  e2e:
+    name: Joomla ${{ matrix.joomla }} + ${{ matrix.db }}
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { joomla: '5.2.6', db: mariadb }
+          - { joomla: '5.4.9', db: mariadb }
+          - { joomla: '6.0.0', db: mariadb }
+          - { joomla: '6.0.0', db: postgresql }
+    services:
+      mariadb:
+        image: ${{ matrix.db == 'mariadb' && 'mariadb:11.4' || '' }}
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: joomla
+        ports: ['3306:3306']
+        options: --health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval=5s --health-retries=20
+      postgres:
+        image: ${{ matrix.db == 'postgresql' && 'postgres:16' || '' }}
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: joomla
+        ports: ['5432:5432']
+        options: --health-cmd=pg_isready --health-interval=5s --health-retries=20
+    env:
+      SITE: http://127.0.0.1:8000
+      JOOMLA: /tmp/joomla
+      LC_PHP: php
+      DB_TYPE: ${{ matrix.db == 'mariadb' && 'mysql' || 'pgsql' }}
+      DB_HOST: ${{ matrix.db == 'mariadb' && '127.0.0.1:3306' || '127.0.0.1:5432' }}
+      DB_USER: ${{ matrix.db == 'mariadb' && 'root' || 'postgres' }}
+      DB_PASS: ${{ matrix.db == 'mariadb' && 'root' || 'postgres' }}
+      DB_NAME: joomla
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql, pdo_pgsql, mysqli, zip, gd, intl
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/download-artifact@v4
+        with:
+          name: package
+          path: dist
+      - name: Test tools (Playwright Chromium, axe-core)
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+          echo "LC_CHROME=$(node -e "console.log(require('playwright-core').chromium.executablePath())")" >> "$GITHUB_ENV"
+      - name: Joomla ${{ matrix.joomla }}
+        run: tests/ci/setup-joomla.sh ${{ matrix.joomla }} "$JOOMLA" "$SITE"
+      - name: Web server
+        run: |
+          (cd "$JOOMLA" && PHP_CLI_SERVER_WORKERS=4 nohup php -S 127.0.0.1:8000 > /tmp/php-server.log 2>&1 &)
+          until curl -s -o /dev/null "$SITE/"; do sleep 1; done
+      - name: Install, then upgrade from the previous release
+        run: |
+          previous=$(curl -sSfL https://api.github.com/repos/${{ github.repository }}/releases/latest | sed -n 's/.*"browser_download_url": "\(.*pkg_lcookies-[0-9.]*\.zip\)".*/\1/p' | head -1)
+          package=$(ls dist/pkg_lcookies-*.zip | head -1)
+          if [ -n "$previous" ]; then
+            curl -sSfL -o /tmp/previous.zip "$previous"
+            tests/install_cycle.sh upgrade "$JOOMLA" "$package" /tmp/previous.zip
+          else
+            tests/install_cycle.sh upgrade "$JOOMLA" "$package"
+          fi
+      - name: Backend
+        run: python3 tests/e2e_admin.py "$SITE" "$JOOMLA"
+      - name: API
+        run: python3 tests/e2e_api.py "$SITE" "$JOOMLA"
+      - name: Frontend
+        run: node tests/e2e_front.mjs "$SITE" "$JOOMLA"
+      - name: Languages
+        run: node tests/e2e_lang.mjs "$SITE" "$JOOMLA" en-GB
+      - name: Uninstall
+        run: tests/install_cycle.sh uninstall "$JOOMLA"
+      - name: Server log
+        if: failure()
+        run: tail -n 100 /tmp/php-server.log; tail -n 50 "$JOOMLA"/administrator/logs/*.php || true
