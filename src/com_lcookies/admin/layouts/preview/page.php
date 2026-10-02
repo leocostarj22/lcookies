@@ -19,7 +19,8 @@ use Joomla\CMS\Uri\Uri;
  * Page of the live preview: a sketch of a site page with the frontend markup, CSS and JavaScript of
  * plg_system_lcookies in preview mode (nothing is stored, sent or run).
  *
- * @var  array  $displayData  contract, language, color, radius, layouts (folders), show (banner|preferences)
+ * @var  array  $displayData  contract, language, color, radius, layouts (folders), show (banner|preferences),
+ *                            nonce (CSP nonce of the backend page)
  */
 
 $contract = $displayData['contract'];
@@ -55,6 +56,7 @@ $headFile = $media . '/js/lcookies-head' . (JDEBUG ? '' : '.min') . '.js';
 $headFile = is_file($headFile) ? $headFile : $media . '/js/lcookies-head.js';
 $json     = JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE;
 $escape   = static fn (string $value): string => htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+$nonce    = $displayData['nonce'] !== '' ? ' nonce="' . $escape($displayData['nonce']) . '"' : '';
 ?>
 <!doctype html>
 <html lang="<?php echo $escape($displayData['language']); ?>">
@@ -64,11 +66,11 @@ $escape   = static fn (string $value): string => htmlspecialchars($value, ENT_QU
     <meta name="robots" content="noindex">
     <base href="<?php echo $escape($root); ?>">
     <title>LCookies</title>
-    <script data-lcookies-skip>window.lcookiesHead=<?php echo json_encode($head, $json); ?>;
+    <script data-lcookies-skip<?php echo $nonce; ?>>window.lcookiesHead=<?php echo json_encode($head, $json); ?>;
 <?php echo is_file($headFile) ? trim((string) file_get_contents($headFile)) : ''; ?></script>
     <script type="application/json" class="joomla-script-options new"><?php echo json_encode(['lcookies' => $contract], $json); ?></script>
-    <link rel="stylesheet" href="<?php echo $escape($asset('css/lcookies.css')); ?>">
-    <style>
+    <link rel="stylesheet" href="<?php echo $escape($asset('css/lcookies.css')); ?>"<?php echo $nonce; ?>>
+    <style<?php echo $nonce; ?>>
         .lcookies, .lcookies-placeholder { --lcookies-primary: <?php echo $displayData['color']; ?>; --lcookies-radius: <?php echo (int) $displayData['radius']; ?>px; }
         html { color-scheme: light; }
         body { margin: 0; font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #f4f6f9; color: #1d2733; }
@@ -101,9 +103,9 @@ $escape   = static fn (string $value): string => htmlspecialchars($value, ENT_QU
         <?php echo $render('banner') . $render('preferences') . $render('floating'); ?>
         <template data-lcookies-placeholder><?php echo $render('placeholder'); ?></template>
     </div>
-    <script src="<?php echo $escape($root . 'media/system/js/core' . (JDEBUG ? '' : '.min') . '.js'); ?>"></script>
-    <script type="module" src="<?php echo $escape($asset('js/lcookies.js')); ?>"></script>
-    <script type="module">
+    <script src="<?php echo $escape($root . 'media/system/js/core' . (JDEBUG ? '' : '.min') . '.js'); ?>"<?php echo $nonce; ?>></script>
+    <script type="module" src="<?php echo $escape($asset('js/lcookies.js')); ?>"<?php echo $nonce; ?>></script>
+    <script type="module"<?php echo $nonce; ?>>
         // Opened on "Preferences" in the backend; links do not leave the preview.
         if (document.body.dataset.lcookiesPreviewShow === 'preferences') {
             window.LCookies.open();

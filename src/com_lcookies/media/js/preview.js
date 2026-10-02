@@ -53,6 +53,8 @@ async function refresh() {
   });
 
   body.append('show', show);
+  // The srcdoc page inherits the Content-Security-Policy of this page: it needs the same nonce.
+  body.append('nonce', document.querySelector('script[nonce]')?.nonce || '');
   body.append(options.token, '1');
 
   request?.abort();

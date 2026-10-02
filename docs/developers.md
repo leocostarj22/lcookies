@@ -87,7 +87,20 @@ Essa tarefa (`Administrator\Controller\PreviewController`, permissão *Opções*
 
 No modo de pré-visualização não se lê nem grava a escolha, não se envia registo e nenhum serviço é executado. As opções só ficam guardadas quando se carrega em *Guardar*.
 
-A página aparece num `iframe` com `srcdoc`, por isso fica sujeita à política de segurança de conteúdo (CSP) do backend. Se o plugin *Sistema - Cabeçalhos HTTP* tiver uma CSP sem `'unsafe-inline'` para scripts, a pré-visualização fica em branco.
+A página aparece num `iframe` com `srcdoc`, por isso herda a política de segurança de conteúdo (CSP) do backend. Com nonces, o `preview.js` envia o nonce da página e a pré-visualização usa-o (ver abaixo).
+
+## Content-Security-Policy
+
+O LCookies funciona com a CSP do plugin *Sistema - Cabeçalhos HTTP* do Joomla, nos dois modos:
+
+| Modo | O que o LCookies faz |
+|---|---|
+| **Nonce** (com ou sem `'strict-dynamic'`) | O script inicial leva o nonce (`csp_nonce`). Os scripts que o LCookies ativa depois do consentimento (padrões de bloqueio, código dos serviços, `type="text/plain"`) são recriados com o mesmo nonce. Com `'strict-dynamic'`, os scripts externos recriados também são aceites. |
+| **Hashes** (sem nonce) | O core calcula os hashes antes de o LCookies inserir o script inicial, por isso o plugin acrescenta ele próprio o `'sha256-…'` desse script à diretiva `script-src` (ou `default-src`) do cabeçalho. Os scripts externos dos serviços correm se a política os permitir (ex. `'self'` ou o domínio do serviço). O código inline dos serviços precisa de nonce. |
+
+- **Políticas com `'unsafe-inline'` em `script-src`:** ficam como estão. Acrescentar um hash desligaria o `'unsafe-inline'` para os outros scripts inline da página.
+- **Cache de páginas:** o *Sistema - Cache de página* guarda o HTML com o nonce e o cabeçalho do primeiro pedido. Isto é uma limitação do core com nonces. Use a cache de página com uma CSP só por domínios, ou não use nonces.
+- **Domínios dos serviços:** a CSP tem de permitir os domínios dos serviços que o site usa (ex. `www.googletagmanager.com` em `script-src` e `www.youtube-nocookie.com` em `frame-src`). O LCookies só decide quando os serviços carregam.
 
 ## Regra de ouro: cache
 

@@ -247,8 +247,9 @@ function cloneScript(old) {
     script.type = old.dataset.lcookiesType;
   }
 
-  if (old.nonce) {
-    script.nonce = old.nonce;
+  // With a nonce-based Content-Security-Policy, code blocked by LCookies has no nonce of its own.
+  if (old.nonce || api._nonce) {
+    script.nonce = old.nonce || api._nonce;
   }
 
   script.text = old.text;

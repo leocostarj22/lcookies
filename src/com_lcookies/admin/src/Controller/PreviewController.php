@@ -50,7 +50,8 @@ class PreviewController extends BaseController
     ];
 
     /**
-     * Sends the preview page (POST `jform` = options being edited, `show` = banner or preferences).
+     * Sends the preview page (POST `jform` = options being edited, `show` = banner or preferences,
+     * `nonce` = CSP nonce of the backend page, which the srcdoc page inherits).
      *
      * @return  void
      */
@@ -89,6 +90,7 @@ class PreviewController extends BaseController
         $contract['gcm']       = null;
 
         $color  = (string) $params->get('color_primary', '#1f5fbf');
+        $nonce  = (string) $this->input->post->get('nonce', '', 'raw');
         $layout = new FileLayout('page', JPATH_ADMINISTRATOR . '/components/com_lcookies/layouts/preview');
         $html   = $layout->render([
             'contract' => $contract,
@@ -97,6 +99,7 @@ class PreviewController extends BaseController
             'radius'   => min(32, max(0, (int) $params->get('border_radius', 8))),
             'layouts'  => $this->layoutPaths(),
             'show'     => $this->input->post->getCmd('show') === 'preferences' ? 'preferences' : 'banner',
+            'nonce'    => preg_match('#^[A-Za-z0-9+/=_-]{1,512}$#', $nonce) ? $nonce : '',
         ]);
 
         $this->app->setHeader('Content-Type', 'text/html; charset=utf-8', true)

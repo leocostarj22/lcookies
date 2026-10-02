@@ -335,5 +335,7 @@
     _gcmUpdate: gcmUpdate,
     _scan: c.scan || null,
     _preview: Boolean(c.preview),
+    // CSP nonce of this script, given to the scripts LCookies runs after consent.
+    _nonce: (d.currentScript && d.currentScript.nonce) || '',
   };
 }(window, document));

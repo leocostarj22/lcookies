@@ -14,6 +14,7 @@ Sistema de consentimento de cookies para **Joomla 5.2+ e 6**, feito para cumprir
   - O HTML é igual para todos os visitantes, por isso o site pode usar cache de página e CDN.
   - Os iframes bloqueados mostram um aviso com um botão para permitir.
 - **Google Consent Mode v2** (incluindo `ads_data_redaction` e `url_passthrough`) e respeito pelo sinal **Global Privacy Control**.
+- **Compatível com Content-Security-Policy** (nonces, `strict-dynamic` ou hashes do plugin *Sistema - Cabeçalhos HTTP*).
 - **Prova de consentimento:**
   - registo de cada escolha, com o IP truncado e com hash;
   - exportação em CSV;

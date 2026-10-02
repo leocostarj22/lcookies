@@ -321,14 +321,60 @@ final class Lcookies extends CMSPlugin implements SubscriberInterface
             $config['all']  = array_keys($gcmMap);
         }
 
-        $file  = JPATH_ROOT . '/media/plg_system_lcookies/js/lcookies-head' . (JDEBUG ? '' : '.min') . '.js';
-        $file  = is_file($file) ? $file : JPATH_ROOT . '/media/plg_system_lcookies/js/lcookies-head.js';
-        $code  = is_file($file) ? trim((string) file_get_contents($file)) : '';
-        $nonce = (string) $this->getApplication()->get('csp_nonce', '');
+        $file   = JPATH_ROOT . '/media/plg_system_lcookies/js/lcookies-head' . (JDEBUG ? '' : '.min') . '.js';
+        $file   = is_file($file) ? $file : JPATH_ROOT . '/media/plg_system_lcookies/js/lcookies-head.js';
+        $code   = is_file($file) ? trim((string) file_get_contents($file)) : '';
+        $nonce  = (string) $this->getApplication()->get('csp_nonce', '');
+        $inline = 'window.lcookiesHead=' . json_encode($config, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) . ";\n" . $code;
+
+        if ($nonce === '') {
+            $this->allowInlineScript($inline);
+        }
 
         return '<script data-lcookies-skip' . ($nonce !== '' ? ' nonce="' . htmlspecialchars($nonce, ENT_QUOTES, 'UTF-8') . '"' : '') . '>'
-            . 'window.lcookiesHead=' . json_encode($config, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) . ";\n"
-            . $code . '</script>';
+            . $inline . '</script>';
+    }
+
+    /**
+     * Adds the hash of an inline script to the Content-Security-Policy of the response, when there
+     * is one without a nonce (e.g. "System - HTTP Headers" with script hashes, which are computed
+     * before LCookies adds its script). Policies that allow 'unsafe-inline' are left alone: a hash
+     * would turn 'unsafe-inline' off for every other inline script.
+     *
+     * @param   string  $code  Content of the script element.
+     *
+     * @return  void
+     */
+    private function allowInlineScript(string $code): void
+    {
+        $app  = $this->getApplication();
+        $hash = "'sha256-" . base64_encode(hash('sha256', $code, true)) . "'";
+
+        foreach ($app->getHeaders() as $header) {
+            $name = strtolower((string) $header['name']);
+
+            if (!\in_array($name, ['content-security-policy', 'content-security-policy-report-only'], true)) {
+                continue;
+            }
+
+            $directives = array_map('trim', explode(';', (string) $header['value']));
+            $target     = null;
+
+            foreach ($directives as $i => $directive) {
+                $directiveName = strtolower(strtok($directive, " \t") ?: '');
+
+                if ($directiveName === 'script-src' || ($directiveName === 'default-src' && $target === null)) {
+                    $target = $i;
+                }
+            }
+
+            if ($target === null || stripos($directives[$target], "'unsafe-inline'") !== false) {
+                continue;
+            }
+
+            $directives[$target] .= ' ' . $hash;
+            $app->setHeader((string) $header['name'], implode('; ', array_filter($directives, 'strlen')), true);
+        }
     }
 
     /**

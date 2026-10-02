@@ -470,6 +470,64 @@ async function main() {
     check('preview saves nothing', fixture('params').trim() === paramsBefore);
     check('no JavaScript errors (preview)', adminErrors.length === 0, adminErrors.join(' | '));
     await scanContext.close();
+
+    /* 16. Content-Security-Policy ("System - HTTP Headers") ------------------------------------- */
+    console.log('Content-Security-Policy');
+    const headersParams = fixture('plugin', 'system', 'httpheaders').trim() || '{}';
+    const headersEnabled = fixture('enable', 'system', 'httpheaders', '1').trim();
+    const csp = (mode, client) => JSON.stringify({
+      contentsecuritypolicy: '1', contentsecuritypolicy_client: client, contentsecuritypolicy_report_only: '0',
+      nonce_enabled: mode === 'nonce' ? '1' : '0', strict_dynamic_enabled: mode === 'nonce' ? '1' : '0',
+      script_hashes_enabled: mode === 'hashes' ? '1' : '0', style_hashes_enabled: '0', frame_ancestors_self_enabled: '1',
+      contentsecuritypolicy_values: { __field0: { directive: 'script-src', value: "'self'", client } },
+    });
+    const cspPage = async () => {
+      const cspContext = await browser.newContext();
+      const cspPageObj = await cspContext.newPage();
+      const response = await cspPageObj.goto(url);
+      await cspPageObj.waitForFunction(() => typeof window.LCookies?.open === 'function', null, { timeout: 10000 }).catch(() => {});
+      return { context: cspContext, page: cspPageObj, header: response.headers()['content-security-policy'] || '' };
+    };
+
+    try {
+      fixture('plugin', 'system', 'httpheaders', csp('nonce', 'both'));
+      let cspRun = await cspPage();
+      check('nonce CSP active (unsigned inline code blocked)', /nonce-/.test(cspRun.header) && await cspRun.page.evaluate(() => window.lcFree === undefined), cspRun.header);
+      check('nonce CSP: banner works', await cspRun.page.isVisible('[data-lcookies-banner]'));
+      await cspRun.page.click('[data-lcookies-banner] [data-lcookies-action="accept"]');
+      await cspRun.page.waitForTimeout(500);
+      let g = await globals(cspRun.page);
+      check('nonce CSP: code of services runs after consent (inline and external)', g.head === 1 && g.body === true && g.external === 1, JSON.stringify(g));
+      await cspRun.context.close();
+
+      // The preview of the options inherits the policy of the backend page.
+      const cspAdminContext = await browser.newContext({ reducedMotion: 'reduce' });
+      const cspAdmin = await cspAdminContext.newPage();
+      await cspAdmin.goto(`${url}/administrator/index.php`);
+      await cspAdmin.fill('#mod-login-username', adminUser);
+      await cspAdmin.fill('#mod-login-password', adminPass);
+      await cspAdmin.click('#btn-login-submit');
+      await cspAdmin.waitForSelector('a[href*="task=logout"]', { state: 'attached' });
+      await cspAdmin.goto(`${url}/administrator/index.php?option=com_config&view=component&component=com_lcookies`);
+      await cspAdmin.click('button[role="tab"][aria-controls="appearance"]');
+      const cspPreview = await cspAdmin.waitForFunction(() => document.querySelector('#appearance [data-lcookies-preview] iframe')
+        .contentWindow?.LCookies?.open, null, { timeout: 15000 }).then(() => true, () => false);
+      check('nonce CSP: preview of the options works', cspPreview);
+      await cspAdminContext.close();
+
+      fixture('plugin', 'system', 'httpheaders', csp('hashes', 'site'));
+      cspRun = await cspPage();
+      check('hash CSP: LCookies adds the hash of its inline script', /script-src[^;]*'sha256-/.test(cspRun.header)
+        && await cspRun.page.evaluate(() => typeof window.LCookies?.open === 'function'), cspRun.header);
+      await cspRun.page.click('[data-lcookies-banner] [data-lcookies-action="accept"]');
+      await cspRun.page.waitForTimeout(500);
+      g = await globals(cspRun.page);
+      check('hash CSP: external code of services runs after consent', g.external === 1, JSON.stringify(g));
+      await cspRun.context.close();
+    } finally {
+      fixture('plugin', 'system', 'httpheaders', headersParams);
+      fixture('enable', 'system', 'httpheaders', headersEnabled);
+    }
     fixture('enable', 'system', 'guidedtours', tours);
 
     // Scan mode seen by a page: PHP (ConsentHelper) and JavaScript agree, nothing is shown or stored.
