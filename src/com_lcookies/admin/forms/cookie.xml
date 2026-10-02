@@ -13,6 +13,14 @@
 			filter="raw"
 		/>
 		<field
+			name="display_name"
+			type="text"
+			label="COM_LCOOKIES_FIELD_DISPLAY_NAME_LABEL"
+			description="COM_LCOOKIES_FIELD_DISPLAY_NAME_DESC"
+			maxlength="255"
+			filter="string"
+		/>
+		<field
 			name="match_type"
 			type="list"
 			label="COM_LCOOKIES_FIELD_MATCH_TYPE_LABEL"

@@ -96,9 +96,10 @@
     "cookie": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name", "match", "type", "domain", "duration", "description"],
+      "required": ["name", "label", "match", "type", "domain", "duration", "description"],
       "properties": {
-        "name": { "type": "string" },
+        "name": { "type": "string", "description": "Name, prefix or regular expression used to find the cookie (see match)." },
+        "label": { "type": "string", "description": "Name shown to visitors: the display name, or the name (a prefix ends with …, a regular expression is never shown)." },
         "match": { "enum": ["exact", "prefix", "regex"] },
         "type": { "enum": ["cookie", "local", "session", "pixel"] },
         "domain": { "type": "string" },

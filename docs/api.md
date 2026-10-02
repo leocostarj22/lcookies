@@ -57,7 +57,7 @@ Os valores são devolvidos como estão guardados. Os dados por omissão usam con
 
 - **categories**: `id`, `alias`, `title`, `description`, `required`, `core`, `gcm_types` (lista de tipos do Consent Mode v2), `state`, `ordering`, datas/autores, `count_services` (lista).
 - **services**: `id`, `category_id`, `alias`, `title`, `provider`, `privacy_url`, `description`, `block_patterns` (um padrão por linha), `head_code`, `body_code`, `state`, `ordering`; a lista inclui `category_alias`, `category_title`, `count_cookies`.
-- **cookies**: `id`, `service_id`, `name`, `match_type` (`exact`/`prefix`/`regex`), `type` (`cookie`/`local`/`session`/`pixel`), `domain`, `duration_value`, `duration_unit` (`session`/`minute`/`hour`/`day`/`month`/`year`), `description`, `source`, `state`, `ordering`.
+- **cookies**: `id`, `service_id`, `name`, `display_name` (nome mostrado aos visitantes; vazio = o nome), `match_type` (`exact`/`prefix`/`regex`), `type` (`cookie`/`local`/`session`/`pixel`), `domain`, `duration_value`, `duration_unit` (`session`/`minute`/`hour`/`day`/`month`/`year`), `description`, `source`, `state`, `ordering`.
 - **consents**: `id`, `consent_uuid`, `action` (`accept_all`/`reject_all`/`custom`/`allow`), `categories` (lista de aliases), `policy_version`, `user_id`, `ip_hash`, `ua_hash`, `url`, `language`, `created` (UTC); a lista inclui `user_name`.
 - **config**: `id` = idioma; os atributos são o contrato.
 

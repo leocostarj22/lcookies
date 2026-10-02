@@ -37,6 +37,13 @@
   - tabelas com scroll passam a ser regiões focáveis;
   - a ligação no meio do texto passa a ser sublinhada.
 - **Revisão de traduções** do backend (pt-PT e en-GB), além do teste de idioma do frontend da Fase 5.
+- **Nomes dos cookies para os visitantes** (pedido do autor depois de instalar a 1.0.0 num site):
+  - as preferências e a tabela da política mostravam o padrão técnico (`^[a-f0-9]{32}$`) e prefixos com `*`, e os nomes partiam a meio;
+  - os cookies ganharam o campo opcional **Nome mostrado aos visitantes** (`display_name`, SQL `1.0.0.sql`; aceita constantes de idioma);
+  - sem esse campo, aparece o nome; um prefixo termina com "…" e uma expressão regular nunca aparece ("Nome variável");
+  - o cookie de sessão do Joomla passa a mostrar "Sessão do Joomla (nome aleatório)";
+  - os nomes reais aparecem como código e só partem a seguir aos `_`;
+  - o contrato ganhou `label` (`ContractBuilder::cookieLabel()`), e a API e a exportação/importação ganharam `display_name`.
 - **Correção:** a desinstalação deixava o template de e-mail do scan agendado, porque o `postflight()` do pacote também corre na desinstalação e voltava a criá-lo.
 
 ## Decisões tomadas (e porquê)

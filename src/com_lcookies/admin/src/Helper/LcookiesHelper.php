@@ -101,6 +101,30 @@ abstract class LcookiesHelper
     }
 
     /**
+     * Name of a cookie for the tables of visitors (preferences, policy page): the label of the
+     * contract (ContractBuilder::cookieLabel()) as code when it is the actual name or prefix, as
+     * text when it is a display name; long names may break after "_".
+     *
+     * @param   array   $cookie  Cookie of the contract (`name`, `label`).
+     * @param   string  $class   CSS class of the code element.
+     *
+     * @return  string  HTML.
+     */
+    public static function cookieLabelHtml(array $cookie, string $class = ''): string
+    {
+        $label = (string) ($cookie['label'] ?? $cookie['name'] ?? '');
+        $html  = str_replace('_', '_<wbr>', htmlspecialchars($label, ENT_QUOTES, 'UTF-8'));
+        $name  = (string) ($cookie['name'] ?? '');
+
+        // A display name such as "Joomla session cookie" is text; an actual name or prefix is code.
+        if ($label !== $name && $label !== $name . '…') {
+            return $html;
+        }
+
+        return '<code' . ($class !== '' ? ' class="' . htmlspecialchars($class, ENT_QUOTES, 'UTF-8') . '"' : '') . '>' . $html . '</code>';
+    }
+
+    /**
      * Loads the site language file of com_lcookies (frontend texts and default data).
      *
      * Language overrides and files installed in /language take precedence over the copy shipped

@@ -90,6 +90,7 @@ class CookiesModel extends ListModel
                     $db->quoteName('a.id'),
                     $db->quoteName('a.service_id'),
                     $db->quoteName('a.name'),
+                    $db->quoteName('a.display_name'),
                     $db->quoteName('a.match_type'),
                     $db->quoteName('a.type'),
                     $db->quoteName('a.domain'),

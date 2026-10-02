@@ -122,6 +122,9 @@ if ($saveOrder && !empty($this->items)) {
                                         <?php else : ?>
                                             <code><?php echo $this->escape($item->name); ?></code>
                                         <?php endif; ?>
+                                        <?php if ($item->display_name !== '') : ?>
+                                            <div class="small"><?php echo $this->escape(LcookiesHelper::text($item->display_name)); ?></div>
+                                        <?php endif; ?>
                                         <?php if ($item->match_type !== 'exact') : ?>
                                             <span class="badge bg-secondary"><?php echo Text::_('COM_LCOOKIES_MATCH_' . strtoupper($item->match_type)); ?></span>
                                         <?php endif; ?>

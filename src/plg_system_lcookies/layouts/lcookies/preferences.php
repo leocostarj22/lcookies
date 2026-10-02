@@ -12,6 +12,8 @@
 \defined('_JEXEC') or die;
 // phpcs:enable PSR1.Files.SideEffects
 
+use Lcsilva\Component\Lcookies\Administrator\Helper\LcookiesHelper;
+
 /**
  * Preferences dialog: one switch per optional category (never pre-selected) and the list of
  * services and cookies of each category.
@@ -90,7 +92,7 @@ $types    = ['cookie' => 'typeCookie', 'local' => 'typeLocal', 'session' => 'typ
                                             <tbody>
                                                 <?php foreach ($service['cookies'] as $cookie) : ?>
                                                     <tr>
-                                                        <th scope="row"><code><?php echo $this->escape($cookie['name'] . ($cookie['match'] === 'prefix' ? '*' : '')); ?></code></th>
+                                                        <th scope="row"><?php echo LcookiesHelper::cookieLabelHtml($cookie); ?></th>
                                                         <td><?php echo $this->escape($texts[$types[$cookie['type']] ?? 'typeCookie']); ?></td>
                                                         <td><?php echo $this->escape($cookie['duration']); ?></td>
                                                         <td><?php echo $this->escape($cookie['description']); ?></td>

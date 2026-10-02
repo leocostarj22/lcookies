@@ -26,7 +26,7 @@ use Lcsilva\Component\Lcookies\Administrator\Table\AbstractLcookiesTable;
  *      "categories": [{alias, title, description, required, gcm_types[], state}],
  *      "services": [{alias, category (alias), title, provider, privacy_url, description,
  *                    block_patterns[], head_code, body_code, state,
- *                    cookies: [{name, match_type, type, domain, duration_value, duration_unit, description, state}]}]}
+ *                    cookies: [{name, display_name, match_type, type, domain, duration_value, duration_unit, description, state}]}]}
  *
  * Records are matched by alias (cookies by name inside their service). Every record goes through
  * the tables, so the rules of the backend forms apply (unique aliases, valid patterns, core
@@ -75,7 +75,7 @@ class TransferModel extends BaseDatabaseModel
 
         $cookies = $db->setQuery(
             $db->createQuery()
-                ->select($db->quoteName(['service_id', 'name', 'match_type', 'type', 'domain', 'duration_value', 'duration_unit', 'description', 'state']))
+                ->select($db->quoteName(['service_id', 'name', 'display_name', 'match_type', 'type', 'domain', 'duration_value', 'duration_unit', 'description', 'state']))
                 ->from($db->quoteName('#__lcookies_cookies'))
                 ->where($db->quoteName('state') . ' IN (0, 1)')
                 ->order($db->quoteName('ordering') . ' ASC')
@@ -114,6 +114,7 @@ class TransferModel extends BaseDatabaseModel
                 'state'          => (int) $service->state,
                 'cookies'        => array_values(array_map(fn ($cookie) => [
                     'name'           => $cookie->name,
+                    'display_name'   => (string) $cookie->display_name,
                     'match_type'     => $cookie->match_type,
                     'type'           => $cookie->type,
                     'domain'         => $cookie->domain,
@@ -346,6 +347,7 @@ class TransferModel extends BaseDatabaseModel
             $saved = $this->save($cookieTable, [
                 'service_id'     => $serviceId,
                 'name'           => (string) ($cookie['name'] ?? ''),
+                'display_name'   => (string) ($cookie['display_name'] ?? ''),
                 'match_type'     => (string) ($cookie['match_type'] ?? 'exact'),
                 'type'           => (string) ($cookie['type'] ?? 'cookie'),
                 'domain'         => (string) ($cookie['domain'] ?? ''),

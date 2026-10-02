@@ -157,6 +157,10 @@ async function main() {
     await page.click('.lcookies-cat__details >> nth=1');
     violations = await axe(page, '[data-lcookies-preferences]');
     check('axe: preferences without violations', violations.length === 0, violations.join(', '));
+    const names = await page.evaluate(() => [...document.querySelectorAll('[data-lcookies-preferences] .lcookies-table th[scope="row"]')]
+      .map((th) => th.textContent.trim()));
+    check('cookie names for visitors: display name, prefix with …, no patterns', names.includes('Joomla session (random name)')
+      && names.includes('joomla_remember_me_…') && !names.some((n) => /[\^$*\[\]]/.test(n)), JSON.stringify(names));
     await shot(page, '2-preferences');
     await page.keyboard.press('Escape');
     check('Escape closes the preferences', !(await page.evaluate(() => document.querySelector('[data-lcookies-preferences]').open)));
@@ -175,11 +179,13 @@ async function main() {
       button: document.querySelector('#lctest-settings .lcookies-settings')?.textContent,
     }));
     check('{lcookies-table}: the categories of the banner', policy.all === 'necessary,statistics,marketing', JSON.stringify(policy));
-    check('{lcookies-table}: services, cookies and services without cookies', ['Test Analytics', 'Test Inc.', '_lc_test_*', 'lc_test_ls',
+    check('{lcookies-table}: services, cookies and services without cookies', ['Test Analytics', 'Test Inc.', '_lc_test_…', 'lc_test_ls',
       'Distinguishes users.', 'Test Video'].every((t) => policy.text.includes(t)) && policy.text.includes(policy.noCookies), policy.text);
     check('{lcookies-table marketing}: one category', policy.marketing === 'marketing', policy.marketing);
     check('shortcodes replaced, table not left inside a paragraph', !policy.left && !policy.inParagraph);
     check('{lcookies-settings label}: plain-text label', policy.button === 'Change my choice', policy.button);
+    const policyText = await page.locator('#lctest-all').textContent();
+    check('policy table: cookie names for visitors', policyText.includes('Joomla session (random name)') && !policyText.includes('[a-f0-9]'));
     violations = await axe(page, '#lctest-all');
     check('axe: policy table without violations', violations.length === 0, violations.join(', '));
     await page.click('#lctest-settings .lcookies-settings');

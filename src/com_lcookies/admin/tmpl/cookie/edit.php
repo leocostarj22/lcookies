@@ -30,7 +30,7 @@ $this->getDocument()->getWebAssetManager()
         <div class="row">
             <div class="col-lg-9">
                 <?php
-                foreach (['name', 'match_type', 'service_id', 'type', 'domain', 'duration_unit', 'duration_value', 'description'] as $field) {
+                foreach (['name', 'match_type', 'display_name', 'service_id', 'type', 'domain', 'duration_unit', 'duration_value', 'description'] as $field) {
                     echo $this->form->renderField($field);
                 }
                 ?>

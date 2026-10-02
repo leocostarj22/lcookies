@@ -101,6 +101,8 @@ try:
     check("cookies filtered by service, ordered", status == 200 and names and names == sorted(names, reverse=True), names)
     status, doc = call("GET", "/cookies?filter[search]=joomla_user", token=ADMIN)
     check("cookies search", status == 200 and [c["name"] for c in items(doc)] == ["joomla_user_state"], doc)
+    status, doc = call("GET", "/cookies?filter[search]=id:1", token=ADMIN)
+    check("cookie display name in the API", status == 200 and [c.get("display_name") for c in items(doc)] == ["COM_LCOOKIES_COOKIE_SESSION_NAME"], doc)
     status, doc = call("GET", "/cookies?page[limit]=2", token=ADMIN)
     check("pagination", status == 200 and len(items(doc)) == 2 and "next" in doc.get("links", {}), doc.get("links"))
 

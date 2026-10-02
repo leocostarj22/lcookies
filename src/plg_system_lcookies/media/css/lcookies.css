@@ -442,7 +442,8 @@
 .lcookies-table code {
   font-size: 0.95em;
   color: inherit;
-  word-break: break-all;
+  /* Long names break after "_" (<wbr>), and anywhere only when one part does not fit. */
+  overflow-wrap: anywhere;
   background: none;
 }
 

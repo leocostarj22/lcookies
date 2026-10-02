@@ -262,7 +262,7 @@ final class ContractBuilder
         $state = 1;
 
         $query = $db->createQuery()
-            ->select($db->quoteName(['service_id', 'name', 'match_type', 'type', 'domain', 'duration_value', 'duration_unit', 'description']))
+            ->select($db->quoteName(['service_id', 'name', 'display_name', 'match_type', 'type', 'domain', 'duration_value', 'duration_unit', 'description']))
             ->from($db->quoteName('#__lcookies_cookies'))
             ->where($db->quoteName('state') . ' = :state')
             ->whereIn($db->quoteName('service_id'), $serviceIds)
@@ -274,6 +274,7 @@ final class ContractBuilder
         foreach ($db->setQuery($query)->loadObjectList() as $row) {
             $result[(int) $row->service_id][] = [
                 'name'        => $row->name,
+                'label'       => self::cookieLabel((string) $row->name, (string) $row->match_type, (string) $row->display_name),
                 'match'       => $row->match_type,
                 'type'        => $row->type,
                 'domain'      => (string) $row->domain,
@@ -283,6 +284,29 @@ final class ContractBuilder
         }
 
         return $result;
+    }
+
+    /**
+     * Name of a cookie as visitors see it: the display name (text or language constant) or,
+     * without one, the name; "…" ends a prefix and a regular expression is never shown.
+     *
+     * @param   string  $name     Name, prefix or regular expression used to find the cookie.
+     * @param   string  $match    exact, prefix or regex.
+     * @param   string  $display  Display name (may be empty).
+     *
+     * @return  string
+     */
+    public static function cookieLabel(string $name, string $match, string $display): string
+    {
+        if (trim($display) !== '') {
+            return LcookiesHelper::text($display);
+        }
+
+        return match ($match) {
+            'prefix' => $name . '…',
+            'regex'  => Text::_('COM_LCOOKIES_UI_NAME_VARIABLE'),
+            default  => $name,
+        };
     }
 
     /**

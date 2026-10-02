@@ -9,6 +9,7 @@
  */
 
 use Joomla\CMS\Language\Text;
+use Lcsilva\Component\Lcookies\Administrator\Helper\LcookiesHelper;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -72,7 +73,7 @@ $types = ['cookie' => 'typeCookie', 'local' => 'typeLocal', 'session' => 'typeSe
                                         <?php if ($cookie === null) : ?>
                                             <td colspan="4"><?php echo $this->escape($texts['noCookies']); ?></td>
                                         <?php else : ?>
-                                            <td><code class="text-reset"><?php echo $this->escape($cookie['name'] . ($cookie['match'] === 'prefix' ? '*' : '')); ?></code></td>
+                                            <td><?php echo LcookiesHelper::cookieLabelHtml($cookie, 'text-reset'); ?></td>
                                             <td><?php echo $this->escape($texts[$types[$cookie['type']] ?? 'typeCookie']); ?></td>
                                             <td><?php echo $this->escape($cookie['duration']); ?></td>
                                             <td><?php echo $this->escape($cookie['description']); ?></td>

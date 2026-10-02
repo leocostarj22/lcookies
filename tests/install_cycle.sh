@@ -56,6 +56,7 @@ upgrade)
         "$(ls "$HERE/../src/com_lcookies/admin/sql/updates/mysql" | sed 's/\.sql$//' | sort -V | tail -1)"
     check "tables" "$(q "SELECT COUNT(*) FROM information_schema.tables WHERE $SCHEMA AND table_name IN ('jos_lcookies_categories', 'jos_lcookies_services', 'jos_lcookies_cookies', 'jos_lcookies_consents', 'jos_lcookies_scans')")" "5"
     check "mail template of the scheduled scan" "$(q "SELECT COUNT(*) FROM jos_mail_templates WHERE template_id = 'plg_task_lcookies.scan'")" "1"
+    check "display name of the Joomla session cookie" "$(q "SELECT display_name FROM jos_lcookies_cookies WHERE name = '^[a-f0-9]{32}$'")" "COM_LCOOKIES_COOKIE_SESSION_NAME"
     check "backend submenu with the scanner" "$(q "SELECT COUNT(*) FROM jos_menu WHERE client_id = 1 AND link LIKE '%option=com_lcookies&view=scanner%'")" "1"
 
     if [[ -n "$OLD" ]]; then

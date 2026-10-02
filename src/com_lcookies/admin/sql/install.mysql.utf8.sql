@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS `#__lcookies_cookies` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `service_id` int unsigned NOT NULL,
   `name` varchar(255) NOT NULL,
+  `display_name` varchar(255) NOT NULL DEFAULT '',
   `match_type` varchar(10) NOT NULL DEFAULT 'exact',
   `type` varchar(20) NOT NULL DEFAULT 'cookie',
   `domain` varchar(255) NOT NULL DEFAULT '',
@@ -124,8 +125,8 @@ INSERT IGNORE INTO `#__lcookies_categories` (`id`, `alias`, `title`, `descriptio
 INSERT IGNORE INTO `#__lcookies_services` (`id`, `category_id`, `alias`, `title`, `provider`, `description`, `block_patterns`, `state`, `ordering`, `created`, `modified`) VALUES
 (1, 1, 'website', 'COM_LCOOKIES_SVC_WEBSITE', '', 'COM_LCOOKIES_SVC_WEBSITE_DESC', '', 1, 1, NOW(), NOW());
 
-INSERT IGNORE INTO `#__lcookies_cookies` (`id`, `service_id`, `name`, `match_type`, `type`, `duration_value`, `duration_unit`, `description`, `ordering`, `created`, `modified`) VALUES
-(1, 1, '^[a-f0-9]{32}$', 'regex', 'cookie', 0, 'session', 'COM_LCOOKIES_COOKIE_SESSION_DESC', 1, NOW(), NOW()),
-(2, 1, 'joomla_user_state', 'exact', 'cookie', 0, 'session', 'COM_LCOOKIES_COOKIE_USER_STATE_DESC', 2, NOW(), NOW()),
-(3, 1, 'joomla_remember_me_', 'prefix', 'cookie', 60, 'day', 'COM_LCOOKIES_COOKIE_REMEMBER_DESC', 3, NOW(), NOW()),
-(4, 1, 'lcookies_consent', 'exact', 'cookie', 180, 'day', 'COM_LCOOKIES_COOKIE_CONSENT_DESC', 4, NOW(), NOW());
+INSERT IGNORE INTO `#__lcookies_cookies` (`id`, `service_id`, `name`, `display_name`, `match_type`, `type`, `duration_value`, `duration_unit`, `description`, `ordering`, `created`, `modified`) VALUES
+(1, 1, '^[a-f0-9]{32}$', 'COM_LCOOKIES_COOKIE_SESSION_NAME', 'regex', 'cookie', 0, 'session', 'COM_LCOOKIES_COOKIE_SESSION_DESC', 1, NOW(), NOW()),
+(2, 1, 'joomla_user_state', '', 'exact', 'cookie', 0, 'session', 'COM_LCOOKIES_COOKIE_USER_STATE_DESC', 2, NOW(), NOW()),
+(3, 1, 'joomla_remember_me_', '', 'prefix', 'cookie', 60, 'day', 'COM_LCOOKIES_COOKIE_REMEMBER_DESC', 3, NOW(), NOW()),
+(4, 1, 'lcookies_consent', '', 'exact', 'cookie', 180, 'day', 'COM_LCOOKIES_COOKIE_CONSENT_DESC', 4, NOW(), NOW());

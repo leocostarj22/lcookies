@@ -120,6 +120,10 @@ for view, expect in [("categories", "Strictly necessary"), ("services", "This we
 html = req("?option=com_lcookies&view=cookies")
 check("duration rendered", "180 days" in html and "Session" in html)
 check("regex badge", "Regular expression" in html)
+check("cookie list shows the display name", "Joomla session (random name)" in html)
+html = req("?option=com_lcookies&task=cookie.edit&id=1")
+check("cookie form has the display name", 'name="jform[display_name]"' in html and 'value="COM_LCOOKIES_COOKIE_SESSION_NAME"' in html)
+req("?option=com_lcookies&view=cookie&layout=edit&id=1", {"task": "cookie.cancel", token(html): "1"})
 
 # Options page
 html = req("?option=com_config&view=component&component=com_lcookies")
