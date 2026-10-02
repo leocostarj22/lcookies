@@ -60,7 +60,9 @@ class HtmlView extends AbstractListView
 
         $this->logging = (bool) ComponentHelper::getParams('com_lcookies')->get('log_consents', 1);
 
-        $this->categoryTitles = $this->getModel()->getCategoryTitles();
+        /** @var \Lcsilva\Component\Lcookies\Administrator\Model\ConsentsModel $model */
+        $model                = $this->getModel();
+        $this->categoryTitles = $model->getCategoryTitles();
 
         parent::display($tpl);
     }

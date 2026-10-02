@@ -73,11 +73,13 @@ class ServicesModel extends ListModel
     /**
      * Form of the batch dialog (move to another category).
      *
-     * @return  \Joomla\CMS\Form\Form|null
+     * @return  \Joomla\CMS\Form\Form
+     *
+     * @throws  \Exception  When the form cannot be loaded.
      */
     public function getBatchForm()
     {
-        return $this->loadForm($this->context . '.batch', 'batch_services', ['control' => '', 'load_data' => false]) ?: null;
+        return $this->loadForm($this->context . '.batch', 'batch_services', ['control' => '', 'load_data' => false]);
     }
 
     /**

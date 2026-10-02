@@ -12,6 +12,7 @@ namespace Lcsilva\Component\Lcookies\Administrator\Controller;
 
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Controller\BaseController;
+use Joomla\CMS\MVC\View\AbstractView;
 use Joomla\CMS\MVC\View\ViewInterface;
 use Joomla\CMS\Router\Route;
 
@@ -74,7 +75,7 @@ class DisplayController extends BaseController
      */
     protected function prepareViewModel(ViewInterface $view)
     {
-        if ($view->getName() === 'presets') {
+        if ($view->getName() === 'presets' && $view instanceof AbstractView) {
             $view->setModel($this->getModel('Transfer', 'Administrator'), true);
 
             return;

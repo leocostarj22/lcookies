@@ -13,6 +13,7 @@ namespace Lcsilva\Plugin\Task\Lcookies\Extension;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Mail\MailTemplate;
+use Joomla\CMS\MVC\Factory\MVCFactoryServiceInterface;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\User\UserFactoryAwareTrait;
@@ -45,9 +46,9 @@ final class Lcookies extends CMSPlugin implements SubscriberInterface
     use UserFactoryAwareTrait;
 
     /**
-     * Routines offered to the scheduler.
+     * Routines offered to the scheduler (read by TaskPluginTrait).
      */
-    private const TASKS_MAP = [
+    protected const TASKS_MAP = [
         'lcookies.purge' => [
             'langConstPrefix' => 'PLG_TASK_LCOOKIES_PURGE',
             'method'          => 'purge',
@@ -90,7 +91,7 @@ final class Lcookies extends CMSPlugin implements SubscriberInterface
      *
      * @return  integer  Status code.
      */
-    private function purge(ExecuteTaskEvent $event): int
+    protected function purge(ExecuteTaskEvent $event): int
     {
         if (!ComponentHelper::isEnabled('com_lcookies')) {
             $this->logTask(Text::_('PLG_TASK_LCOOKIES_LOG_DISABLED'), 'warning');
@@ -113,7 +114,7 @@ final class Lcookies extends CMSPlugin implements SubscriberInterface
      *
      * @return  integer  Status code.
      */
-    private function scan(ExecuteTaskEvent $event): int
+    protected function scan(ExecuteTaskEvent $event): int
     {
         if (!ComponentHelper::isEnabled('com_lcookies')) {
             $this->logTask(Text::_('PLG_TASK_LCOOKIES_LOG_DISABLED'), 'warning');
@@ -121,10 +122,16 @@ final class Lcookies extends CMSPlugin implements SubscriberInterface
             return Status::NO_RUN;
         }
 
-        /** @var ScannerModel $model */
-        $model = $this->getApplication()->bootComponent('com_lcookies')->getMVCFactory()
-            ->createModel('Scanner', 'Administrator', ['ignore_request' => true]);
-        $scan  = $model->start('task');
+        $component = $this->getApplication()->bootComponent('com_lcookies');
+        $model     = $component instanceof MVCFactoryServiceInterface
+            ? $component->getMVCFactory()->createModel('Scanner', 'Administrator', ['ignore_request' => true])
+            : null;
+
+        if (!$model instanceof ScannerModel) {
+            return Status::NO_RUN;
+        }
+
+        $scan = $model->start('task');
 
         foreach (array_keys($scan['pages']) as $page) {
             $model->server($scan['id'], $page);

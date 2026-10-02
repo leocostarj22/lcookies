@@ -39,7 +39,9 @@ class HtmlView extends BaseHtmlView
      */
     public function display($tpl = null): void
     {
-        $this->presets = $this->getModel()->getPresets();
+        /** @var \Lcsilva\Component\Lcookies\Administrator\Model\TransferModel $model */
+        $model         = $this->getModel();
+        $this->presets = $model->getPresets();
 
         $this->addToolbar();
 

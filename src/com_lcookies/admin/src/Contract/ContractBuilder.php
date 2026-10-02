@@ -116,10 +116,10 @@ final class ContractBuilder
         $privacy  = (int) $params->get('privacy_menuitem', 0);
 
         return [
-            'schema'            => self::SCHEMA,
-            'policyVersion'     => max(1, (int) $params->get('policy_version', 1)),
-            'expiryDays'        => min(395, max(1, (int) $params->get('consent_expiry_days', 180))),
-            'cookie'            => [
+            'schema'        => self::SCHEMA,
+            'policyVersion' => max(1, (int) $params->get('policy_version', 1)),
+            'expiryDays'    => min(395, max(1, (int) $params->get('consent_expiry_days', 180))),
+            'cookie'        => [
                 'name'   => self::COOKIE_NAME,
                 'domain' => $this->cookieDomain(),
             ],
@@ -241,7 +241,7 @@ final class ContractBuilder
                 'provider'    => (string) $row->provider,
                 'description' => LcookiesHelper::text($row->description),
                 'privacyUrl'  => $row->privacy_url !== '' ? $row->privacy_url : null,
-                'patterns'    => array_values(array_filter(array_map('trim', $patterns), 'strlen')),
+                'patterns'    => array_values(array_filter(array_map('trim', $patterns), static fn (string $line): bool => $line !== '')),
                 'cookies'     => $cookies[$id] ?? [],
             ];
         }

@@ -71,15 +71,15 @@ class ScanController extends BaseController
         $this->checkToken('get');
         $this->requirePermission('core.create');
 
-        $type     = $this->input->getCmd('type');
-        $duration = max(0, $this->input->getInt('duration', 0));
+        $type           = $this->input->getCmd('type');
+        $duration       = max(0, $this->input->getInt('duration', 0));
         [$value, $unit] = match (true) {
-            $duration === 0           => [0, 'session'],
-            $duration >= 86400 * 365  => [(int) round($duration / (86400 * 365)), 'year'],
-            $duration >= 86400 * 30   => [(int) round($duration / (86400 * 30)), 'month'],
-            $duration >= 86400        => [(int) round($duration / 86400), 'day'],
-            $duration >= 3600         => [(int) round($duration / 3600), 'hour'],
-            default                   => [max(1, (int) round($duration / 60)), 'minute'],
+            $duration === 0          => [0, 'session'],
+            $duration >= 86400 * 365 => [(int) round($duration / (86400 * 365)), 'year'],
+            $duration >= 86400 * 30  => [(int) round($duration / (86400 * 30)), 'month'],
+            $duration >= 86400       => [(int) round($duration / 86400), 'day'],
+            $duration >= 3600        => [(int) round($duration / 3600), 'hour'],
+            default                  => [max(1, (int) round($duration / 60)), 'minute'],
         };
 
         $this->app->setUserState('com_lcookies.edit.cookie.data', [

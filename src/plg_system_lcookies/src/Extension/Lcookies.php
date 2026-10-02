@@ -10,6 +10,7 @@
 
 namespace Lcsilva\Plugin\System\Lcookies\Extension;
 
+use Joomla\CMS\Application\CMSWebApplicationInterface;
 use Joomla\CMS\Cache\CacheControllerFactoryInterface;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Document\HtmlDocument;
@@ -75,9 +76,9 @@ final class Lcookies extends CMSPlugin implements SubscriberInterface
      */
     public static function getSubscribedEvents(): array
     {
+        // onAfterRender runs last, so that scripts added by other plugins in onAfterRender are blocked too.
         return [
             'onBeforeCompileHead'   => 'onBeforeCompileHead',
-            // Last, so that scripts added by other plugins in onAfterRender are blocked too.
             'onAfterRender'         => ['onAfterRender', Priority::MIN],
             'onPageCacheIsExcluded' => 'onPageCacheIsExcluded',
         ];
@@ -95,7 +96,8 @@ final class Lcookies extends CMSPlugin implements SubscriberInterface
         $app      = $this->getApplication();
         $document = $event->getDocument();
 
-        if (!$app->isClient('site') || !$document instanceof HtmlDocument || !ComponentHelper::isEnabled('com_lcookies')) {
+        if (!$app instanceof CMSWebApplicationInterface || !$app->isClient('site') || !$document instanceof HtmlDocument
+            || !ComponentHelper::isEnabled('com_lcookies')) {
             return;
         }
 
@@ -162,7 +164,12 @@ final class Lcookies extends CMSPlugin implements SubscriberInterface
             return;
         }
 
-        $app      = $this->getApplication();
+        $app = $this->getApplication();
+
+        if (!$app instanceof CMSWebApplicationInterface) {
+            return;
+        }
+
         $body     = (string) $app->getBody();
         $contract = $this->contract;
 
@@ -351,6 +358,10 @@ final class Lcookies extends CMSPlugin implements SubscriberInterface
         $app  = $this->getApplication();
         $hash = "'sha256-" . base64_encode(hash('sha256', $code, true)) . "'";
 
+        if (!$app instanceof CMSWebApplicationInterface) {
+            return;
+        }
+
         foreach ($app->getHeaders() as $header) {
             $name = strtolower((string) $header['name']);
 
@@ -374,7 +385,7 @@ final class Lcookies extends CMSPlugin implements SubscriberInterface
             }
 
             $directives[$target] .= ' ' . $hash;
-            $app->setHeader((string) $header['name'], implode('; ', array_filter($directives, 'strlen')), true);
+            $app->setHeader((string) $header['name'], implode('; ', array_filter($directives, static fn (string $line): bool => $line !== '')), true);
         }
     }
 

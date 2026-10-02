@@ -71,6 +71,7 @@ abstract class AbstractListView extends BaseHtmlView
      */
     public function display($tpl = null): void
     {
+        /** @var \Joomla\CMS\MVC\Model\ListModel $model */
         $model = $this->getModel();
 
         $this->items         = $model->getItems();

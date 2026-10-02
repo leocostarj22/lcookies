@@ -73,7 +73,7 @@ class ServiceTable extends AbstractLcookiesTable
 
         // One pattern per line: plain text is a substring match, /.../ is a regular expression.
         $patterns = preg_split('/\R/', (string) $this->block_patterns);
-        $patterns = array_values(array_filter(array_map('trim', $patterns), 'strlen'));
+        $patterns = array_values(array_filter(array_map('trim', $patterns), static fn (string $line): bool => $line !== ''));
 
         foreach ($patterns as $pattern) {
             if (\strlen($pattern) > 2 && $pattern[0] === '/' && substr($pattern, -1) === '/'

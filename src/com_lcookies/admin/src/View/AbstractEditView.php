@@ -56,6 +56,7 @@ abstract class AbstractEditView extends BaseHtmlView
      */
     public function display($tpl = null): void
     {
+        /** @var \Joomla\CMS\MVC\Model\AdminModel $model */
         $model       = $this->getModel();
         $this->form  = $model->getForm();
         $this->item  = $model->getItem();

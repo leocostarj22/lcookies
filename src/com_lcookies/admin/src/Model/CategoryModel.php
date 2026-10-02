@@ -35,15 +35,11 @@ class CategoryModel extends AbstractItemModel
      * @param   array    $data      Data for the form.
      * @param   boolean  $loadData  True if the form is to load its own data.
      *
-     * @return  \Joomla\CMS\Form\Form|boolean
+     * @return  \Joomla\CMS\Form\Form
      */
     public function getForm($data = [], $loadData = true)
     {
         $form = parent::getForm($data, $loadData);
-
-        if ($form === false) {
-            return false;
-        }
 
         $id    = (int) $this->getState($this->getName() . '.id');
         $table = $this->getTable();

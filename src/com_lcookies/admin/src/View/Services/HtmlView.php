@@ -47,7 +47,9 @@ class HtmlView extends AbstractListView
      */
     public function display($tpl = null): void
     {
-        $this->batchForm = $this->canBatch() ? $this->getModel()->getBatchForm() : null;
+        /** @var \Lcsilva\Component\Lcookies\Administrator\Model\ServicesModel $model */
+        $model           = $this->getModel();
+        $this->batchForm = $this->canBatch() ? $model->getBatchForm() : null;
 
         parent::display($tpl);
     }

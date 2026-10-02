@@ -15,6 +15,7 @@ use Joomla\CMS\Filter\InputFilter;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Controller\ApiController;
 use Joomla\CMS\MVC\Controller\Exception\ResourceNotFound;
+use Joomla\CMS\MVC\Model\AdminModel;
 use Lcsilva\Component\Lcookies\Administrator\Exception\DeleteRefusedException;
 
 // phpcs:disable PSR1.Files.SideEffects
@@ -139,6 +140,11 @@ abstract class AbstractLcookiesController extends ApiController
 
         $id    = (int) ($id ?? $this->input->getInt('id'));
         $model = $this->getModel($this->itemModel, 'Administrator', ['ignore_request' => true]);
+
+        if (!$model instanceof AdminModel) {
+            throw new \RuntimeException(\sprintf('Model %s not found.', $this->itemModel), 500);
+        }
+
         $table = $model->getTable();
 
         if (!$id || !$table->load($id)) {
@@ -155,7 +161,7 @@ abstract class AbstractLcookiesController extends ApiController
             throw new DeleteRefusedException(Text::_('JLIB_APPLICATION_ERROR_DELETE'));
         }
 
-        $this->app->setHeader('status', 204);
+        $this->app->setHeader('status', '204');
     }
 
     /**

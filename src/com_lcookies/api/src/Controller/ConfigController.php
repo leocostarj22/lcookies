@@ -10,6 +10,7 @@
 
 namespace Lcsilva\Component\Lcookies\Api\Controller;
 
+use Joomla\CMS\Application\WebApplication;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\LanguageFactoryInterface;
@@ -61,7 +62,9 @@ class ConfigController extends ApiController
 
         if ($language->getTag() !== $tag) {
             $language = Factory::getContainer()->get(LanguageFactoryInterface::class)->createLanguage($tag, (bool) $this->app->get('debug_lang'));
-            $this->app->loadLanguage($language);
+            if ($this->app instanceof WebApplication) {
+                $this->app->loadLanguage($language);
+            }
 
             // Text::_() translates with Factory::$language; the core language filter plugin switches it the same way.
             Factory::$language = $language;

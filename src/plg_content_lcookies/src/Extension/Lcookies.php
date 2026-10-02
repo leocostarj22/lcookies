@@ -87,7 +87,8 @@ final class Lcookies extends CMSPlugin implements SubscriberInterface
             && ComponentHelper::isEnabled('com_lcookies');
 
         $item->text = preg_replace_callback(self::PATTERN, function (array $m) use ($render): string {
-            [$open, $name, $argument, $close] = [$m[1] ?? '', strtolower($m[2]), trim($this->plain($m[3] ?? '')), $m[4] ?? ''];
+            [$open, $name, $argument, $close] = [$m[1], strtolower($m[2]), trim($this->plain($m[3] ?? '')), $m[4] ?? ''];
+
             $html = $render ? ($name === 'table' ? $this->table($argument) : $this->settings($argument)) : '';
 
             // A table cannot stay in the paragraph; a button can, unless the paragraph is left empty.

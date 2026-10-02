@@ -108,7 +108,7 @@ class TransferModel extends BaseDatabaseModel
                 'provider'       => $service->provider,
                 'privacy_url'    => $service->privacy_url,
                 'description'    => (string) $service->description,
-                'block_patterns' => array_values(array_filter(preg_split('/\R/', (string) $service->block_patterns), 'strlen')),
+                'block_patterns' => array_values(array_filter(preg_split('/\R/', (string) $service->block_patterns), static fn (string $line): bool => $line !== '')),
                 'head_code'      => (string) $service->head_code,
                 'body_code'      => (string) $service->body_code,
                 'state'          => (int) $service->state,

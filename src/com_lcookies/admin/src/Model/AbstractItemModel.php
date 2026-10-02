@@ -66,14 +66,15 @@ abstract class AbstractItemModel extends AdminModel
      * @param   array    $data      Data for the form.
      * @param   boolean  $loadData  True if the form is to load its own data.
      *
-     * @return  \Joomla\CMS\Form\Form|boolean
+     * @return  \Joomla\CMS\Form\Form
+     *
+     * @throws  \Exception  When the form cannot be loaded.
      */
     public function getForm($data = [], $loadData = true)
     {
         $name = $this->getName();
-        $form = $this->loadForm($this->option . '.' . $name, $name, ['control' => 'jform', 'load_data' => $loadData]);
 
-        return empty($form) ? false : $form;
+        return $this->loadForm($this->option . '.' . $name, $name, ['control' => 'jform', 'load_data' => $loadData]);
     }
 
     /**

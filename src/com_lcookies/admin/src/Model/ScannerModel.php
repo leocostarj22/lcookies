@@ -130,8 +130,8 @@ class ScannerModel extends BaseDatabaseModel
             $key = $type . ':' . $name;
 
             $items[$key] ??= ['name' => $name, 'type' => $type, 'server' => false, 'browser' => false, 'before' => false, 'duration' => null, 'pages' => []];
-            $items[$key][$where] = true;
-            $items[$key]['before'] = $items[$key]['before'] || $before;
+            $items[$key][$where]    = true;
+            $items[$key]['before']  = $items[$key]['before'] || $before;
             $items[$key]['pages'][] = $page;
 
             if ($duration !== null) {

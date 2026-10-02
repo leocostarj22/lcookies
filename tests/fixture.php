@@ -31,20 +31,20 @@
  */
 
 [$script, $root, $command] = $argv + [null, null, null];
-$args = array_slice($argv, 3);
+$args                      = \array_slice($argv, 3);
 
-if (!$root || !is_file($root . '/configuration.php') || !in_array($command, ['setup', 'params', 'consents', 'events', 'token', 'asset', 'plugin', 'enable', 'livesite', 'deluser', 'teardown'], true)) {
+if (!$root || !is_file($root . '/configuration.php') || !\in_array($command, ['setup', 'params', 'consents', 'events', 'token', 'asset', 'plugin', 'enable', 'livesite', 'deluser', 'teardown'], true)) {
     fwrite(STDERR, "Usage: php tests/fixture.php <joomla root> setup|params|consents|events|token|asset|plugin|enable|livesite|deluser|teardown [key=value ...]\n");
     exit(1);
 }
 
-define('_JEXEC', 1);
+\define('_JEXEC', 1);
 require $root . '/configuration.php';
 
-$config = new JConfig();
+$config        = new JConfig();
 [$host, $port] = explode(':', $config->host) + [1 => null];
-$pgsql  = $config->dbtype === 'pgsql';
-$dsn    = ($pgsql ? 'pgsql' : 'mysql') . ':host=' . $host . ($port ? ';port=' . $port : '') . ';dbname=' . $config->db
+$pgsql         = $config->dbtype === 'pgsql';
+$dsn           = ($pgsql ? 'pgsql' : 'mysql') . ':host=' . $host . ($port ? ';port=' . $port : '') . ';dbname=' . $config->db
     . ($pgsql ? '' : ';charset=utf8mb4');
 $db     = new PDO($dsn, $config->user, $config->password, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 $p      = $config->dbprefix;
@@ -104,15 +104,18 @@ if ($command === 'consents') {
 
 if ($command === 'token') {
     [$username, $group] = $args + [null, null];
-    $find = $db->prepare("SELECT id FROM {$p}users WHERE username = ?");
+    $find               = $db->prepare("SELECT id FROM {$p}users WHERE username = ?");
     $find->execute([$username]);
     $userId = (int) $find->fetchColumn();
 
     if (!$userId && $group) {
-        $q = $pgsql ? '"' : '`';
+        $q       = $pgsql ? '"' : '`';
         $columns = implode(', ', array_map(fn ($c) => $q . $c . $q, ['name', 'username', 'email', 'password', 'block', 'sendEmail', 'registerDate', 'params', 'requireReset']));
-        run($db, "INSERT INTO {$p}users ($columns) VALUES (?, ?, ?, ?, 0, 0, ?, '{}', 0)",
-            [$username, $username, $username . '@example.com', password_hash(bin2hex(random_bytes(16)), PASSWORD_BCRYPT), $now]);
+        run(
+            $db,
+            "INSERT INTO {$p}users ($columns) VALUES (?, ?, ?, ?, 0, 0, ?, '{}', 0)",
+            [$username, $username, $username . '@example.com', password_hash(bin2hex(random_bytes(16)), PASSWORD_BCRYPT), $now]
+        );
         $find->execute([$username]);
         $userId = (int) $find->fetchColumn();
         run($db, "INSERT INTO {$p}user_usergroup_map (user_id, group_id) VALUES (?, ?)", [$userId, (int) $group]);
@@ -125,8 +128,11 @@ if ($command === 'token') {
 
     $seed = base64_encode(random_bytes(32));
     run($db, "DELETE FROM {$p}user_profiles WHERE user_id = ? AND profile_key LIKE 'joomlatoken.%'", [$userId]);
-    run($db, "INSERT INTO {$p}user_profiles (user_id, profile_key, profile_value, ordering) VALUES (?, 'joomlatoken.token', ?, 1), (?, 'joomlatoken.enabled', '1', 2)",
-        [$userId, $seed, $userId]);
+    run(
+        $db,
+        "INSERT INTO {$p}user_profiles (user_id, profile_key, profile_value, ordering) VALUES (?, 'joomlatoken.token', ?, 1), (?, 'joomlatoken.enabled', '1', 2)",
+        [$userId, $seed, $userId]
+    );
     echo base64_encode('sha256:' . $userId . ':' . hash_hmac('sha256', base64_decode($seed), $config->secret)), "\n";
     exit;
 }
@@ -149,7 +155,7 @@ if ($command === 'deluser') {
 
 if ($command === 'plugin') {
     [$folder, $element, $params] = $args + [null, null, null];
-    $find = $db->prepare("SELECT params FROM {$p}extensions WHERE type = 'plugin' AND folder = ? AND element = ?");
+    $find                        = $db->prepare("SELECT params FROM {$p}extensions WHERE type = 'plugin' AND folder = ? AND element = ?");
     $find->execute([$folder, $element]);
     echo $find->fetchColumn(), "\n";
 
@@ -175,7 +181,7 @@ if ($command === 'livesite') {
 
 if ($command === 'enable') {
     [$folder, $element, $enabled] = $args + [null, null, null];
-    $find = $db->prepare("SELECT enabled FROM {$p}extensions WHERE type = 'plugin' AND folder = ? AND element = ?");
+    $find                         = $db->prepare("SELECT enabled FROM {$p}extensions WHERE type = 'plugin' AND folder = ? AND element = ?");
     $find->execute([$folder, $element]);
     echo $find->fetchColumn(), "\n";
 
@@ -188,7 +194,7 @@ if ($command === 'enable') {
 
 if ($command === 'asset') {
     [$name, $rules] = $args + [null, null];
-    $find = $db->prepare("SELECT rules FROM {$p}assets WHERE name = ?");
+    $find           = $db->prepare("SELECT rules FROM {$p}assets WHERE name = ?");
     $find->execute([$name]);
     echo $find->fetchColumn(), "\n";
 
@@ -216,8 +222,11 @@ if ($command === 'params') {
 teardown($db, $p, $root);
 
 // Earlier tests (e2e_admin.py) may have edited the default category.
-run($db, "UPDATE {$p}lcookies_categories SET title = ?, description = ?, gcm_types = ?, state = 1 WHERE alias = 'statistics'",
-    ['COM_LCOOKIES_CAT_STATISTICS', 'COM_LCOOKIES_CAT_STATISTICS_DESC', '["analytics_storage"]']);
+run(
+    $db,
+    "UPDATE {$p}lcookies_categories SET title = ?, description = ?, gcm_types = ?, state = 1 WHERE alias = 'statistics'",
+    ['COM_LCOOKIES_CAT_STATISTICS', 'COM_LCOOKIES_CAT_STATISTICS_DESC', '["analytics_storage"]']
+);
 
 $service = "INSERT INTO {$p}lcookies_services (id, category_id, alias, title, provider, privacy_url, description, block_patterns, head_code, body_code, state, ordering, created, modified)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)";

@@ -1,0 +1,32 @@
+# Static analysis of LCookies against a Joomla installation (JOOMLA_PATH, see build/phpstan-bootstrap.php).
+#   JOOMLA_PATH=/path/to/joomla composer stan
+parameters:
+    level: 5
+    phpVersion: 80100
+    paths:
+        - src
+    excludePaths:
+        # Templates and layouts run inside a view or a FileLayout ($this, $displayData).
+        - src/*/tmpl/*
+        - src/*/*/tmpl/*
+        - src/*/layouts/*
+        - src/*/*/layouts/*
+    # JVERSION and JDEBUG differ between installations (the plugins branch on JVERSION).
+    dynamicConstantNames:
+        - JVERSION
+        - JDEBUG
+    ignoreErrors:
+        # Joomla types Factory::getApplication(), BaseController::$app and CMSPlugin::getApplication()
+        # as CMSApplicationInterface and HtmlView::getDocument() as Document. The code below only runs
+        # in the web applications (site, administrator, api) and HTML views, which have these methods
+        # (CMSWebApplicationInterface, HtmlDocument) but the declared types do not.
+        - identifier: method.notFound
+          message: '#^Call to an undefined method Joomla\\CMS\\Application\\CMSApplicationInterface::(setHeader|sendHeaders|getUserState|setUserState|getDocument)\(\)\.$#'
+        - identifier: method.notFound
+          message: '#^Call to an undefined method Joomla\\CMS\\Document\\Document::getToolbar\(\)\.$#'
+    bootstrapFiles:
+        - build/phpstan-bootstrap.php
+    scanDirectories:
+        # Core components whose classes the plugins use (namespaces registered by Joomla at runtime).
+        - %env.JOOMLA_PATH%/administrator/components/com_scheduler/src
+        - %env.JOOMLA_PATH%/administrator/components/com_privacy/src
