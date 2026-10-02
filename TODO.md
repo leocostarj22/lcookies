@@ -46,7 +46,7 @@ Ao fechar uma fase: marcar tudo, preencher `docs/fases/fase-N.md` e atualizar o 
 - [x] Exportação CSV (filtros ativos, UTF-8 BOM, anti-fórmulas, ACL `lcookies.consents.export`)
 - [x] Versão da política guardada em cada registo (pedidos com versão antiga recusados)
 - [x] Retenção: limpeza automática (1 em cada 100 gravações) + botão "Eliminar expirados"
-- [ ] (opcional) Plugin `task` para limpeza agendada
+- [x] (opcional) Plugin `task` para limpeza agendada (Fase 5, `plg_task_lcookies`)
 
 ## Fase 4 — Web Services API ✅ (v0.4.0, ver `docs/fases/fase-4.md` e `docs/api.md`)
 - [x] `plg_webservices_lcookies` (rotas `v1/lcookies/...`, ativado na primeira instalação)
@@ -59,13 +59,13 @@ Ao fechar uma fase: marcar tudo, preencher `docs/fases/fase-N.md` e atualizar o 
 ## Fase 5 — Extras
 - [x] Biblioteca de presets (13 serviços: GA4, GTM, Google Ads, Meta, LinkedIn, TikTok, Hotjar, Clarity, Matomo, YouTube, Vimeo, Maps, reCAPTCHA) + import/export JSON (mesmo formato; `TransferModel`)
 - [x] Batch nas listas (mover serviços entre categorias, diálogo `joomla-dialog-batch` do core)
-- [ ] Scanner (servidor + cliente)
+- [ ] Scanner (servidor + cliente) ← próximo; inclui a rotina de scan agendado no `plg_task_lcookies`
 - [x] Dashboard com estatísticas (vista por omissão: totais, escolhas e aceitação por categoria em 30 dias, alertas de configuração)
 - [ ] Pré-visualização em tempo real no backend
 - [ ] Validar as traduções pt-PT do frontend num site com o pacote de idioma pt-PT instalado
 - [x] `mod_lcookies` (botão de preferências, escolha atual preenchida em JS, link para a política)
 - [x] `plg_content_lcookies` ({lcookies-table}, {lcookies-settings}; layouts `lcookies.policy`/`lcookies.settings`)
-- [ ] `plg_task_lcookies` (purga + scan agendado) ← próximo
+- [x] `plg_task_lcookies` (rotina `lcookies.purge`: elimina os registos expirados; o scan agendado entra com o scanner)
 - [x] `plg_privacy_lcookies` (exportação + remoção: desligar da conta ou apagar)
 - [x] `ConsentHelper::has()` + evento `onLCookiesConsentChange` (`docs/developers.md`)
 

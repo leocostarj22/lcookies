@@ -20,6 +20,7 @@ use Joomla\Database\ParameterType;
 /**
  * Package installer script: enforces the minimum Joomla and PHP versions and enables the plugins
  * the first time they are installed (later updates keep whatever the administrator chose).
+ * On uninstall it removes the scheduled tasks of plg_task_lcookies.
  */
 class Pkg_LcookiesInstallerScript extends InstallerScript
 {
@@ -38,7 +39,7 @@ class Pkg_LcookiesInstallerScript extends InstallerScript
      *
      * @var  array
      */
-    private array $plugins = [['system', 'lcookies'], ['webservices', 'lcookies'], ['content', 'lcookies'], ['privacy', 'lcookies']];
+    private array $plugins = [['system', 'lcookies'], ['webservices', 'lcookies'], ['content', 'lcookies'], ['privacy', 'lcookies'], ['task', 'lcookies']];
 
     /**
      * Plugins that were not installed before this run.
@@ -97,6 +98,27 @@ class Pkg_LcookiesInstallerScript extends InstallerScript
 
             $db->setQuery($query)->execute();
         }
+    }
+
+    /**
+     * Removes the scheduled tasks of plg_task_lcookies, which would be left orphaned.
+     *
+     * @param   InstallerAdapter  $parent  The adapter.
+     *
+     * @return  boolean
+     */
+    public function uninstall($parent)
+    {
+        $db    = Factory::getContainer()->get(DatabaseInterface::class);
+        $types = 'lcookies.%';
+        $query = $db->createQuery()
+            ->delete($db->quoteName('#__scheduler_tasks'))
+            ->where($db->quoteName('type') . ' LIKE :types')
+            ->bind(':types', $types);
+
+        $db->setQuery($query)->execute();
+
+        return true;
     }
 
     /**

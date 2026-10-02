@@ -16,7 +16,7 @@ Sistema de consentimento de cookies para **Joomla 5.2+ e 6**, feito para cumprir
 - **Prova de consentimento:**
   - registo de cada escolha, com o IP truncado e com hash;
   - exportação em CSV;
-  - período de retenção configurável;
+  - período de retenção configurável, com limpeza automática ou por tarefa agendada;
   - versão da política: quando muda, o banner volta a aparecer.
 - **Painel** com totais, aceitação por categoria nos últimos 30 dias e alertas de configuração.
 - **Biblioteca de serviços:** 13 serviços prontos a usar, como GA4, GTM, Google Ads, Meta, LinkedIn, TikTok, Hotjar, Clarity, Matomo, YouTube, Vimeo, Google Maps e reCAPTCHA.
@@ -38,12 +38,13 @@ Sistema de consentimento de cookies para **Joomla 5.2+ e 6**, feito para cumprir
 | `plg_system_lcookies` | Banner, bloqueio, Consent Mode e limpeza de cookies rejeitados |
 | `plg_content_lcookies` | Códigos `{lcookies-table}` e `{lcookies-settings}` |
 | `plg_privacy_lcookies` | Pedidos de exportação e remoção de dados (com_privacy) |
+| `plg_task_lcookies` | Tarefa agendada que elimina os registos expirados |
 | `plg_webservices_lcookies` | Rotas da API REST |
 | `mod_lcookies` | Módulo "Definições de cookies" |
 
 Os plugins ficam ativos na primeira instalação.
 
-> A release publicada é a 0.4.0. O painel, a biblioteca, a importação/exportação, a edição em lote, os códigos de conteúdo, o módulo, a integração com a Privacidade e o `ConsentHelper` estão no ramo `main` e saem na versão 0.5.0.
+> A release publicada é a 0.4.0. O painel, a biblioteca, a importação/exportação, a edição em lote, os códigos de conteúdo, o módulo, a integração com a Privacidade, a tarefa agendada e o `ConsentHelper` estão no ramo `main` e saem na versão 0.5.0.
 
 ## Requisitos
 
@@ -64,7 +65,8 @@ Descarregue `pkg_lcookies-X.Y.Z.zip` da [última release](https://github.com/leo
 2. Em *Componentes → LCookies → Serviços*, use o botão *Biblioteca* para adicionar os serviços que o site usa. Para outros serviços, use *Novo*, com os padrões que identificam os scripts a bloquear.
 3. No artigo da política de cookies, escreva `{lcookies-table}` e `{lcookies-settings}`.
 4. Opcional: publique o módulo *LCookies - Definições de cookies* no rodapé.
-5. Abra o *Painel* do LCookies e corrija os alertas que aparecerem.
+5. Opcional: em *Sistema → Tarefas agendadas*, crie uma tarefa diária *LCookies - Eliminar registos de consentimento expirados*.
+6. Abra o *Painel* do LCookies e corrija os alertas que aparecerem.
 
 ## Documentação
 

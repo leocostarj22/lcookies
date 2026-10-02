@@ -135,15 +135,26 @@ final class ConsentLog
     }
 
     /**
+     * Retention period of the records (option "log_retention_months").
+     *
+     * @param   Registry  $params  Options of com_lcookies.
+     *
+     * @return  integer  Months, 1 to 120.
+     */
+    public static function retentionMonths(Registry $params): int
+    {
+        return min(120, max(1, (int) $params->get('log_retention_months', 24)));
+    }
+
+    /**
      * Deletes the records older than the retention period.
      *
      * @return  integer  Number of records deleted.
      */
     public function purge(): int
     {
-        $months = min(120, max(1, (int) $this->params->get('log_retention_months', 24)));
-        $limit  = Factory::getDate('-' . $months . ' months')->toSql();
-        $query  = $this->db->createQuery()
+        $limit = Factory::getDate('-' . self::retentionMonths($this->params) . ' months')->toSql();
+        $query = $this->db->createQuery()
             ->delete($this->db->quoteName('#__lcookies_consents'))
             ->where($this->db->quoteName('created') . ' < :limit')
             ->bind(':limit', $limit);

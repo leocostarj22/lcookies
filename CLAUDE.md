@@ -5,11 +5,11 @@ Sistema de consentimento de cookies para Joomla 5.x e 6.x. Plano completo: `docs
 ## Estado atual
 - **Fase concluída:** 4 — Web Services API (v0.4.0, publicada; servidor de atualizações ativo)
 - **Fase em curso:** 5 — Extras.
-  - **Feito:** biblioteca de serviços e import/export, lote, dashboard, `ConsentHelper` + `onLCookiesConsentChange`, `plg_content_lcookies`, `mod_lcookies`, `plg_privacy_lcookies`, README.
+  - **Feito:** biblioteca de serviços e import/export, lote, dashboard, `ConsentHelper` + `onLCookiesConsentChange`, `plg_content_lcookies`, `mod_lcookies`, `plg_privacy_lcookies`, `plg_task_lcookies` (purga agendada), README.
   - **Testes:** admin 89/89, API 42/42, front 83/83 nos 4 sites de teste.
 - **Onde parámos (2026-10-01):**
   - **Em teste pelo autor:** `dist/pkg_lcookies-0.5.0-dev.zip` num site externo. Começar por recolher o que encontrou.
-  - **A seguir:** `plg_task_lcookies` (purga agendada e scan agendado), depois o scanner, a pré-visualização em tempo real e a validação do pt-PT.
+  - **A seguir:** o scanner (com a rotina de scan agendado no `plg_task_lcookies`), depois a pré-visualização em tempo real e a validação do pt-PT.
   - **Fecho da fase:**
     - subir todas as versões para 0.5.0;
     - retirar do README a nota "A release publicada é a 0.4.0…";
@@ -22,7 +22,7 @@ Sistema de consentimento de cookies para Joomla 5.x e 6.x. Plano completo: `docs
 3. Ao fechar: criar `docs/fases/fase-N.md` a partir de `docs/fases/_modelo.md` e atualizar "Estado atual" acima.
 
 ## Estrutura
-- `src/` — código das extensões (`src/com_lcookies` com `admin/`, `site/`, `api/`; `src/plg_system_lcookies`, `src/plg_webservices_lcookies`, `src/plg_content_lcookies`, `src/plg_privacy_lcookies`, `src/mod_lcookies`, futuros `src/plg_*`) + manifest do pacote. Plugins novos: listar em `src/pkg_lcookies.xml` e em `$plugins` de `src/script.php` (ativação na 1.ª instalação).
+- `src/` — código das extensões (`src/com_lcookies` com `admin/`, `site/`, `api/`; `src/plg_system_lcookies`, `src/plg_webservices_lcookies`, `src/plg_content_lcookies`, `src/plg_privacy_lcookies`, `src/plg_task_lcookies`, `src/mod_lcookies`, futuros `src/plg_*`) + manifest do pacote. Plugins novos: listar em `src/pkg_lcookies.xml` e em `$plugins` de `src/script.php` (ativação na 1.ª instalação).
 - Releases: tag `vX.Y.Z` igual a `<version>` de `src/pkg_lcookies.xml` → `.github/workflows/release.yml` cria a release no GitHub (`leocostarj22/lcookies`, público) com o zip e `pkg_lcookies.xml` (servidor de atualizações: `releases/latest/download/pkg_lcookies.xml`, sha512). Ver `README.md`.
 - `build/build.py` — gera `dist/pkg_lcookies-<versão>.zip` e `dist/pkg_lcookies.xml` (cada pasta `com_/plg_/mod_` vira `packages/<nome>.zip`; tem de estar listada em `src/pkg_lcookies.xml`). Minifica os `.js/.css` de `media/` com esbuild → precisa de `npm install` (ver `package.json`).
 - `tests/e2e_admin.py` — teste end-to-end do backend (ver `docs/fases/fase-1.md`).

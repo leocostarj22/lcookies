@@ -16,6 +16,7 @@ use Joomla\CMS\Language\Text;
 use Joomla\CMS\Router\Route;
 use Joomla\CMS\Session\Session;
 use Joomla\CMS\Toolbar\ToolbarHelper;
+use Lcsilva\Component\Lcookies\Administrator\Consent\ConsentLog;
 use Lcsilva\Component\Lcookies\Administrator\View\AbstractListView;
 
 // phpcs:disable PSR1.Files.SideEffects
@@ -82,7 +83,7 @@ class HtmlView extends AbstractListView
 
         if ($user->authorise('core.delete', 'com_lcookies')) {
             $toolbar->confirmButton('delete', 'COM_LCOOKIES_CONSENTS_PURGE', 'consents.purge')
-                ->message(Text::sprintf('COM_LCOOKIES_CONSENTS_PURGE_CONFIRM', (int) ComponentHelper::getParams('com_lcookies')->get('log_retention_months', 24)))
+                ->message(Text::sprintf('COM_LCOOKIES_CONSENTS_PURGE_CONFIRM', ConsentLog::retentionMonths(ComponentHelper::getParams('com_lcookies'))))
                 ->icon('icon-trash')
                 ->listCheck(false);
         }

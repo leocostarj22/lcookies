@@ -363,6 +363,26 @@ html = req("?option=com_lcookies&view=consents")
 html = req("?option=com_lcookies&view=consents", {"task": "consents.purge", token(html): "1"})
 check("purge deletes only expired", sql("SELECT COUNT(*) FROM jos_lcookies_consents") == "3" and "1 expired record deleted" in html, str(messages(html)))
 
+# Scheduled purge (plg_task_lcookies): create the task in System → Scheduled Tasks and run it ("Run Test")
+sql("DELETE FROM jos_scheduler_tasks WHERE type = 'lcookies.purge'")
+html = req("?option=com_scheduler&view=select")
+check("scheduler offers the purge routine", "type=lcookies.purge" in html and "LCookies - Delete Expired Consent Records" in html)
+req("?option=com_scheduler&task=task.add&type=lcookies.purge")
+html = req("?option=com_scheduler&view=task&layout=edit")
+html = req("?option=com_scheduler&view=task&layout=edit&id=0", {
+    "jform[title]": "LCookies purge", "jform[type]": "lcookies.purge", "jform[id]": "0", "jform[state]": "1",
+    "jform[priority]": "0", "jform[params][individual_log]": "0", "jform[execution_rules][rule-type]": "interval-days",
+    "jform[execution_rules][interval-days]": "1", "jform[execution_rules][exec-time]": "03:00", "task": "task.save", token(html): "1"})
+task_id = sql("SELECT id FROM jos_scheduler_tasks WHERE type = 'lcookies.purge'")
+check("purge task saved", task_id.isdigit(), str(messages(html)))
+sql("INSERT INTO jos_lcookies_consents (consent_uuid, action, categories, policy_version, ip_hash, ua_hash, url, language, created) VALUES "
+    f"('cccccccc-dddd-4eee-8fff-000000000000', 'custom', '[\"necessary\"]', 1, '', '', '', 'en-GB', {old})")
+html = req("?option=com_scheduler&view=tasks")
+run = req(f"?option=com_ajax&format=json&plugin=RunSchedulerTest&group=system&id={task_id}&{token(html)}=1")
+check("purge task deletes only expired", '"status":0' in run and sql("SELECT COUNT(*) FROM jos_lcookies_consents") == "3"
+      and sql(f"SELECT times_executed FROM jos_scheduler_tasks WHERE id = {task_id or 0}") == "1", run[:300])
+sql("DELETE FROM jos_scheduler_tasks WHERE type = 'lcookies.purge'")
+
 # Dashboard ----------------------------------------------------------------------------------------
 html = req("?option=com_lcookies")
 check("dashboard is the default view", 'id="lcookies-dashboard"' in html, html[:300])
