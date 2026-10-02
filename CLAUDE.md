@@ -5,11 +5,11 @@ Sistema de consentimento de cookies para Joomla 5.x e 6.x. Plano completo: `docs
 ## Estado atual
 - **Fase concluída:** 4 — Web Services API (v0.4.0, publicada; servidor de atualizações ativo)
 - **Fase em curso:** 5 — Extras.
-  - **Feito:** biblioteca de serviços e import/export, lote, dashboard, `ConsentHelper` + `onLCookiesConsentChange`, `plg_content_lcookies`, `mod_lcookies`, `plg_privacy_lcookies`, `plg_task_lcookies` (purga agendada), README.
+  - **Feito:** biblioteca de serviços e import/export, lote, dashboard, `ConsentHelper` + `onLCookiesConsentChange`, `plg_content_lcookies`, `mod_lcookies`, `plg_privacy_lcookies`, `plg_task_lcookies` (purga e scan agendados), scanner de cookies, README.
   - **Testes:** admin 89/89, API 42/42, front 83/83 nos 4 sites de teste.
 - **Onde parámos (2026-10-01):**
   - **Em teste pelo autor:** `dist/pkg_lcookies-0.5.0-dev.zip` num site externo. Começar por recolher o que encontrou.
-  - **A seguir:** o scanner (com a rotina de scan agendado no `plg_task_lcookies`), depois a pré-visualização em tempo real e a validação do pt-PT.
+  - **A seguir:** a pré-visualização em tempo real, depois a validação do pt-PT.
   - **Fecho da fase:**
     - subir todas as versões para 0.5.0;
     - retirar do README a nota "A release publicada é a 0.4.0…";
@@ -51,4 +51,6 @@ Sistema de consentimento de cookies para Joomla 5.x e 6.x. Plano completo: `docs
 - Erros novos em modelos: lançar exceção (ex. `Administrator\Exception\DeleteRefusedException`, 409 na API) em vez de `setError()` (deprecated); os controllers admin apanham-na.
 - Commits: [Conventional Commits](https://www.conventionalcommits.org/) em inglês — `tipo(âmbito): resumo` no imperativo, ≤ 72 caracteres (tipos `feat`, `fix`, `docs`, `test`, `refactor`, `perf`, `build`, `ci`, `chore`; âmbitos `component`, `system`, `webservices`, `api`, `build`, `release`…), corpo a explicar o porquê, `BREAKING CHANGE:` quando aplicável. Um commit por alteração lógica. **Sem assinaturas/linhas Co-Authored-By.** Autor/créditos: leocostadeveloper (www.leocostadeveloper.com).
 - Consentimento no servidor: `Administrator\Helper\ConsentHelper` (mesmas regras que `LCookies.hasConsent()`); escolhas gravadas disparam `onLCookiesConsentChange` (`Administrator\Event\ConsentChangeEvent`, grupos `system` e `lcookies`). Documentado em `docs/developers.md`.
+- Scanner: `Administrator\Scanner\Scanner` (páginas, passagem do servidor, token `?lcookies_scan=<none|all>.<token>`, classificação) + `ScannerModel` (`#__lcookies_scans`) + `media/com_lcookies/js/scanner.js` (passagens no browser, iframe da mesma origem). O modo de scan é respeitado por `plg_system_lcookies` (PHP e JS) e pelo `ConsentHelper`; documentado em `docs/developers.md`.
+- Testes no browser do backend do J6: contexto com `reducedMotion: 'reduce'` (as view transitions do Atum param o Chromium headless) e `fixture.php enable system guidedtours 0`.
 - Fora do âmbito: IAB TCF, geo-targeting.

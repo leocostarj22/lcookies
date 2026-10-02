@@ -20,7 +20,8 @@ use Joomla\Database\ParameterType;
 /**
  * Package installer script: enforces the minimum Joomla and PHP versions and enables the plugins
  * the first time they are installed (later updates keep whatever the administrator chose).
- * On uninstall it removes the scheduled tasks of plg_task_lcookies.
+ * It also keeps the mail template of the scheduled scan; on uninstall it removes the scheduled tasks
+ * and the mail templates of plg_task_lcookies.
  */
 class Pkg_LcookiesInstallerScript extends InstallerScript
 {
@@ -72,7 +73,20 @@ class Pkg_LcookiesInstallerScript extends InstallerScript
     }
 
     /**
-     * Enables the plugins installed for the first time.
+     * Mail templates: id => [subject, body, tags].
+     *
+     * @var  array
+     */
+    private array $mailTemplates = [
+        'plg_task_lcookies.scan' => [
+            'PLG_TASK_LCOOKIES_MAIL_SCAN_SUBJECT',
+            'PLG_TASK_LCOOKIES_MAIL_SCAN_BODY',
+            ['sitename', 'url', 'pages', 'issues', 'unknown', 'link'],
+        ],
+    ];
+
+    /**
+     * Enables the plugins installed for the first time and adds missing mail templates.
      *
      * @param   string            $type    install, update or discover_install.
      * @param   InstallerAdapter  $parent  The adapter.
@@ -98,10 +112,37 @@ class Pkg_LcookiesInstallerScript extends InstallerScript
 
             $db->setQuery($query)->execute();
         }
+
+        foreach ($this->mailTemplates as $id => [$subject, $body, $tags]) {
+            $exists = $db->setQuery(
+                $db->createQuery()
+                    ->select('COUNT(*)')
+                    ->from($db->quoteName('#__mail_templates'))
+                    ->where($db->quoteName('template_id') . ' = :id')
+                    ->bind(':id', $id)
+            )->loadResult();
+
+            if ((int) $exists) {
+                continue;
+            }
+
+            $template = (object) [
+                'template_id' => $id,
+                'extension'   => explode('.', $id, 2)[0],
+                'language'    => '',
+                'subject'     => $subject,
+                'body'        => $body,
+                'htmlbody'    => '',
+                'attachments' => '',
+                'params'      => json_encode(['tags' => $tags]),
+            ];
+
+            $db->insertObject('#__mail_templates', $template);
+        }
     }
 
     /**
-     * Removes the scheduled tasks of plg_task_lcookies, which would be left orphaned.
+     * Removes the scheduled tasks and the mail templates of plg_task_lcookies, which would be left orphaned.
      *
      * @param   InstallerAdapter  $parent  The adapter.
      *
@@ -115,6 +156,14 @@ class Pkg_LcookiesInstallerScript extends InstallerScript
             ->delete($db->quoteName('#__scheduler_tasks'))
             ->where($db->quoteName('type') . ' LIKE :types')
             ->bind(':types', $types);
+
+        $db->setQuery($query)->execute();
+
+        $extension = 'plg_task_lcookies';
+        $query     = $db->createQuery()
+            ->delete($db->quoteName('#__mail_templates'))
+            ->where($db->quoteName('extension') . ' = :extension')
+            ->bind(':extension', $extension);
 
         $db->setQuery($query)->execute();
 

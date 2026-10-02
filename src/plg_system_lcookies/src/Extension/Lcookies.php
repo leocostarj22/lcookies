@@ -15,6 +15,7 @@ use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Document\HtmlDocument;
 use Joomla\CMS\Event\Application\AfterRenderEvent;
 use Joomla\CMS\Event\Application\BeforeCompileHeadEvent;
+use Joomla\CMS\Event\PageCache\IsExcludedEvent;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Layout\FileLayout;
 use Joomla\CMS\Plugin\CMSPlugin;
@@ -26,6 +27,7 @@ use Joomla\Event\SubscriberInterface;
 use Joomla\Registry\Registry;
 use Lcsilva\Component\Lcookies\Administrator\Contract\ContractBuilder;
 use Lcsilva\Component\Lcookies\Administrator\Helper\LcookiesHelper;
+use Lcsilva\Component\Lcookies\Administrator\Scanner\Scanner;
 use Lcsilva\Plugin\System\Lcookies\Html\Blocker;
 
 // phpcs:disable PSR1.Files.SideEffects
@@ -37,6 +39,9 @@ use Lcsilva\Plugin\System\Lcookies\Html\Blocker;
  *
  * onBeforeCompileHead publishes the contract (Joomla.getOptions('lcookies')) and the assets;
  * onAfterRender blocks scripts/iframes, adds the head bootstrap, the services' code and the markup.
+ * With a valid ?lcookies_scan=<mode>.<token> (the cookie scanner of com_lcookies) the page ignores
+ * the visitor's choice ("none": no consent, "all": everything accepted), stores nothing and is
+ * not cached.
  */
 final class Lcookies extends CMSPlugin implements SubscriberInterface
 {
@@ -57,6 +62,13 @@ final class Lcookies extends CMSPlugin implements SubscriberInterface
     private array $code = [];
 
     /**
+     * Scan mode of the request: null, "none" or "all".
+     *
+     * @var  ?string
+     */
+    private ?string $scan = null;
+
+    /**
      * Returns the events this plugin listens to.
      *
      * @return  array
@@ -64,9 +76,10 @@ final class Lcookies extends CMSPlugin implements SubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            'onBeforeCompileHead' => 'onBeforeCompileHead',
+            'onBeforeCompileHead'   => 'onBeforeCompileHead',
             // Last, so that scripts added by other plugins in onAfterRender are blocked too.
-            'onAfterRender'       => ['onAfterRender', Priority::MIN],
+            'onAfterRender'         => ['onAfterRender', Priority::MIN],
+            'onPageCacheIsExcluded' => 'onPageCacheIsExcluded',
         ];
     }
 
@@ -94,6 +107,7 @@ final class Lcookies extends CMSPlugin implements SubscriberInterface
 
         $this->contract = $data['contract'];
         $this->code     = $data['code'];
+        $this->scan     = Scanner::mode((string) $app->getInput()->get(Scanner::PARAM, '', 'cmd'), (string) $app->get('secret'));
 
         $document->addScriptOptions('lcookies', $this->contract);
 
@@ -111,7 +125,28 @@ final class Lcookies extends CMSPlugin implements SubscriberInterface
                 ['plg_system_lcookies.lcookies']
             );
 
+        if ($this->scan !== null) {
+            // Joomla then sends no-cache headers (browsers, proxies and CDNs).
+            $app->allowCache(false);
+
+            return;
+        }
+
         $this->expireRejectedCookies();
+    }
+
+    /**
+     * Keeps the pages of the cookie scanner out of the page cache.
+     *
+     * @param   IsExcludedEvent  $event  The event.
+     *
+     * @return  void
+     */
+    public function onPageCacheIsExcluded(IsExcludedEvent $event): void
+    {
+        if ($this->scan !== null) {
+            $event->addResult(true);
+        }
     }
 
     /**
@@ -280,6 +315,11 @@ final class Lcookies extends CMSPlugin implements SubscriberInterface
             'rules' => $rules,
             'gcm'   => $contract['gcm'] ? $contract['gcm'] + ['map' => (object) $gcmMap] : null,
         ];
+
+        if ($this->scan !== null) {
+            $config['scan'] = $this->scan;
+            $config['all']  = array_keys($gcmMap);
+        }
 
         $file  = JPATH_ROOT . '/media/plg_system_lcookies/js/lcookies-head' . (JDEBUG ? '' : '.min') . '.js';
         $file  = is_file($file) ? $file : JPATH_ROOT . '/media/plg_system_lcookies/js/lcookies-head.js';

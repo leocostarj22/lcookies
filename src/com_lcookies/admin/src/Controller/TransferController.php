@@ -78,7 +78,7 @@ class TransferController extends BaseController
     }
 
     /**
-     * Adds a service of the library (`preset` = its alias).
+     * Adds a service of the library (`preset` = its alias; `return=scanner` goes back to the scanner).
      *
      * @return  void
      */
@@ -101,7 +101,10 @@ class TransferController extends BaseController
      */
     private function run(callable $task): void
     {
-        $this->setRedirect(Route::_('index.php?option=com_lcookies&view=presets', false));
+        // The scanner suggests services of the library and asks to come back to its results.
+        $view = $this->input->getCmd('return') === 'scanner' ? 'scanner' : 'presets';
+
+        $this->setRedirect(Route::_('index.php?option=com_lcookies&view=' . $view, false));
 
         /** @var TransferModel $model */
         $model = $this->getModel('Transfer', 'Administrator');

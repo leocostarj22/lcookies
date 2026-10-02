@@ -59,13 +59,13 @@ Ao fechar uma fase: marcar tudo, preencher `docs/fases/fase-N.md` e atualizar o 
 ## Fase 5 — Extras
 - [x] Biblioteca de presets (13 serviços: GA4, GTM, Google Ads, Meta, LinkedIn, TikTok, Hotjar, Clarity, Matomo, YouTube, Vimeo, Maps, reCAPTCHA) + import/export JSON (mesmo formato; `TransferModel`)
 - [x] Batch nas listas (mover serviços entre categorias, diálogo `joomla-dialog-batch` do core)
-- [ ] Scanner (servidor + cliente) ← próximo; inclui a rotina de scan agendado no `plg_task_lcookies`
+- [x] Scanner (servidor + browser sem consentimento + browser com tudo aceite; `#__lcookies_scans`, ACL `lcookies.scan`, modo de scan com token no `plg_system`, sugestões da biblioteca, alertas no painel) + rotina `lcookies.scan` com template de e-mail
 - [x] Dashboard com estatísticas (vista por omissão: totais, escolhas e aceitação por categoria em 30 dias, alertas de configuração)
-- [ ] Pré-visualização em tempo real no backend
+- [ ] Pré-visualização em tempo real no backend ← próximo
 - [ ] Validar as traduções pt-PT do frontend num site com o pacote de idioma pt-PT instalado
 - [x] `mod_lcookies` (botão de preferências, escolha atual preenchida em JS, link para a política)
 - [x] `plg_content_lcookies` ({lcookies-table}, {lcookies-settings}; layouts `lcookies.policy`/`lcookies.settings`)
-- [x] `plg_task_lcookies` (rotina `lcookies.purge`: elimina os registos expirados; o scan agendado entra com o scanner)
+- [x] `plg_task_lcookies` (rotina `lcookies.purge`: elimina os registos expirados; `lcookies.scan`: scan agendado com e-mail)
 - [x] `plg_privacy_lcookies` (exportação + remoção: desligar da conta ou apagar)
 - [x] `ConsentHelper::has()` + evento `onLCookiesConsentChange` (`docs/developers.md`)
 

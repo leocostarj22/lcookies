@@ -236,6 +236,28 @@
 		/>
 	</fieldset>
 
+	<fieldset name="scanner" label="COM_LCOOKIES_CONFIG_SCANNER" description="COM_LCOOKIES_CONFIG_SCANNER_DESC">
+		<field
+			name="scan_max_pages"
+			type="number"
+			label="COM_LCOOKIES_CONFIG_SCAN_MAX_PAGES_LABEL"
+			description="COM_LCOOKIES_CONFIG_SCAN_MAX_PAGES_DESC"
+			default="20"
+			min="1"
+			max="100"
+			filter="integer"
+		/>
+		<field
+			name="scan_urls"
+			type="textarea"
+			label="COM_LCOOKIES_CONFIG_SCAN_URLS_LABEL"
+			description="COM_LCOOKIES_CONFIG_SCAN_URLS_DESC"
+			rows="5"
+			filter="string"
+			hint="/index.php/contact"
+		/>
+	</fieldset>
+
 	<fieldset name="permissions" label="JCONFIG_PERMISSIONS_LABEL" description="JCONFIG_PERMISSIONS_DESC">
 		<field
 			name="rules"

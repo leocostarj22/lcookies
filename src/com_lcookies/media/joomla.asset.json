@@ -1,0 +1,20 @@
+{
+  "$schema": "https://developer.joomla.org/schemas/json-schema/web_assets.json",
+  "name": "com_lcookies",
+  "version": "0.4.0",
+  "description": "LCookies component",
+  "license": "GPL-2.0-or-later",
+  "assets": [
+    {
+      "name": "com_lcookies.scanner",
+      "type": "script",
+      "uri": "com_lcookies/scanner.min.js",
+      "dependencies": [
+        "core"
+      ],
+      "attributes": {
+        "type": "module"
+      }
+    }
+  ]
+}

@@ -5,7 +5,8 @@
  * `window.lcookiesHead = {...}` (configuration derived from the contract):
  *   v: policy version, n: consent cookie name, d: validity in days, req: required categories,
  *   rules: [{c: category, s: service, p: [patterns]}], gcm: null | {waitForUpdate, adsDataRedaction,
- *   urlPassthrough, map: {category: [consent types]}}
+ *   urlPassthrough, map: {category: [consent types]}}, scan: "none" | "all" (cookie scanner only, with
+ *   all: [every category]); in scan mode the visitor's own choice is ignored and nothing is stored.
  *
  * It reads the stored consent, sets the Google Consent Mode defaults, and keeps scripts and iframes
  * that other scripts create later blocked until their category is accepted. It defines
@@ -48,6 +49,10 @@
   }
 
   var state = { consent: readConsent() };
+
+  if (c.scan) {
+    state.consent = c.scan === 'all' ? { id: '', v: c.v, cats: c.all.slice(), ts: Math.floor(Date.now() / 1000) } : null;
+  }
 
   function granted(cat) {
     return c.req.indexOf(cat) !== -1 || (!!state.consent && state.consent.cats.indexOf(cat) !== -1);
@@ -325,5 +330,6 @@
     _state: state,
     _readConsent: readConsent,
     _gcmUpdate: gcmUpdate,
+    _scan: c.scan || null,
   };
 }(window, document));

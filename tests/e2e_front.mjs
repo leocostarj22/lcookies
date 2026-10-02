@@ -380,6 +380,78 @@ async function main() {
     });
     check('endpoint answers 404 when off', off.status === 404);
     await quiet.close();
+
+    /* 14. Cookie scanner (backend) ------------------------------------------------------------- */
+    console.log('Cookie scanner');
+    fixture('params', 'log_consents=1');
+    const [adminUser, adminPass] = (process.env.LC_ADMIN || 'admin:Admin123456789!').split(/:(.*)/s);
+    // The guided tour of the backend would take over the page.
+    const tours = fixture('enable', 'system', 'guidedtours', '0').trim();
+    // Atum (Joomla 6) uses cross-document view transitions, which stop headless Chromium from painting.
+    const scanContext = await browser.newContext({ reducedMotion: 'reduce' });
+    const host = new URL(url).hostname;
+    // The administrator's own choice for the site (reject all) must not change what the scan finds.
+    const ownChoice = encodeURIComponent(JSON.stringify({ id: 'own', v: 1, cats: ['necessary'], ts: Math.floor(Date.now() / 1000) }));
+    await scanContext.addCookies([{ name: 'lcookies_consent', value: ownChoice, domain: host, path: '/' }]);
+    const admin = await scanContext.newPage();
+    const adminErrors = [];
+    admin.on('pageerror', (error) => adminErrors.push(error.message));
+    await admin.goto(`${url}/administrator/index.php`);
+    await admin.fill('#mod-login-username', adminUser);
+    await admin.fill('#mod-login-password', adminPass);
+    await admin.click('#btn-login-submit');
+    await admin.waitForSelector('a[href*="task=logout"]', { state: 'attached' });
+    await admin.goto(`${url}/administrator/index.php?option=com_lcookies&view=scanner`);
+    const recordsBefore = records().length;
+    const scanUrls = {};
+    admin.on('request', (r) => {
+      const mode = new URL(r.url()).searchParams.get('lcookies_scan')?.split('.')[0];
+      if (mode && r.resourceType() === 'document') {
+        scanUrls[mode] = r.url();
+      }
+    });
+    await admin.click('[data-lcookies-scan-start]');
+    await admin.waitForURL(/view=scanner&id=\d+/, { timeout: 180000 });
+    const found = await admin.evaluate(() => ({
+      items: Object.fromEntries([...document.querySelectorAll('[data-lcookies-scan-item]')]
+        .map((row) => [row.dataset.lcookiesScanItem, row.cells[2].textContent.replace(/\s+/g, ' ').trim()])),
+      requests: [...document.querySelectorAll('[data-lcookies-scan-request]')].map((row) => row.dataset.lcookiesScanRequest),
+      issues: Number(document.querySelector('[data-lcookies-scan-issues]')?.dataset.lcookiesScanIssues || 0),
+    }));
+    const status = (key) => found.items[key] || '';
+    check('scan results shown', Object.keys(found.items).length > 0, JSON.stringify(found));
+    check('scan: cookie set by a service after consent is declared', /Declared/.test(status('cookie:_lc_test_a')) && !/Before consent/.test(status('cookie:_lc_test_a')), status('cookie:_lc_test_a'));
+    check('scan: local storage of a service is declared', /Declared/.test(status('local:lc_test_ls')), status('local:lc_test_ls'));
+    check('scan: unblocked cookie reported before consent', /Before consent/.test(status('cookie:lc_scan_free')) && /Not declared/.test(status('cookie:lc_scan_free')), status('cookie:lc_scan_free'));
+    check('scan: request to another site before consent', found.requests.includes('localhost'), JSON.stringify(found));
+    check('scan: problems counted', found.issues >= 2, String(found.issues));
+    check('scan stores no consent', records().length === recordsBefore);
+    const kept = (await scanContext.cookies(url)).find((c) => c.name === 'lcookies_consent');
+    check("scan keeps the administrator's own choice", kept && kept.value === ownChoice, kept && kept.value);
+    check('no JavaScript errors (scanner)', adminErrors.length === 0, adminErrors.join(' | '));
+    await scanContext.close();
+    fixture('enable', 'system', 'guidedtours', tours);
+
+    // Scan mode seen by a page: PHP (ConsentHelper) and JavaScript agree, nothing is shown or stored.
+    const scanVisit = await browser.newContext();
+    page = await scanVisit.newPage();
+    await page.goto(scanUrls.all || `${url}/?lcookies_scan=all.missing`);
+    await ready(page);
+    h = await helper(page);
+    check('scan mode "all": PHP and JS accept every category', h.has.marketing && h.has.statistics
+      && await page.evaluate(() => window.LCookies.hasConsent('marketing')), JSON.stringify(h));
+    check('scan mode "all": no banner, no floating button', !(await page.isVisible('[data-lcookies-banner]')) && !(await page.isVisible('[data-lcookies-floating]')));
+    check('scan mode "all": services run', (await globals(page)).external === 1);
+    await page.goto(scanUrls.none || `${url}/?lcookies_scan=none.missing`);
+    await ready(page);
+    h = await helper(page);
+    check('scan mode "none": nothing accepted, no banner', !h.has.statistics && !(await page.evaluate(() => window.LCookies.hasConsent('statistics')))
+      && !(await page.isVisible('[data-lcookies-banner]')), JSON.stringify(h));
+    check('scan mode stores no consent cookie', !(await scanVisit.cookies(url)).some((c) => c.name === 'lcookies_consent'));
+    await page.goto(`${url}/?lcookies_scan=all.1.9999999999.${'0'.repeat(64)}`);
+    await ready(page);
+    check('invalid scan token: normal page with the banner', await page.isVisible('[data-lcookies-banner]'));
+    await scanVisit.close();
   } finally {
     await browser.close();
     fixture('params', ...DEFAULTS, 'gcm_enabled=0');

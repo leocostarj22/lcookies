@@ -83,6 +83,11 @@ function send(consent, action) {
 }
 
 function commit(cats, action) {
+  // Scan mode (cookie scanner of the backend): the choice is fixed and nothing is stored.
+  if (api._scan) {
+    return;
+  }
+
   const before = grantedOptional();
   const allowed = optional.filter((cat) => cats.includes(cat) && !isGpcBlocked(cat));
   const previous = currentConsent();
@@ -528,13 +533,16 @@ function init() {
     contract,
   });
 
-  cleanup();
+  if (!api._scan) {
+    cleanup();
+  }
+
   addPlaceholders();
 
   if (currentConsent()) {
-    showFloating(true);
+    showFloating(!api._scan);
     activate();
-  } else {
+  } else if (!api._scan) {
     showBanner();
   }
 

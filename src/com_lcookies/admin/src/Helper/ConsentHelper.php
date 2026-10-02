@@ -15,6 +15,7 @@ use Joomla\CMS\Factory;
 use Joomla\Database\DatabaseInterface;
 use Joomla\Database\ParameterType;
 use Lcsilva\Component\Lcookies\Administrator\Contract\ContractBuilder;
+use Lcsilva\Component\Lcookies\Administrator\Scanner\Scanner;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -33,6 +34,9 @@ use Lcsilva\Component\Lcookies\Administrator\Contract\ContractBuilder;
  * The answer depends on the visitor: output built with it must not be cached for everyone
  * (System - Page Cache, module/component caching). For cacheable pages, output the code always
  * and let LCookies block it (blocking patterns, or type="text/plain" data-lcookies-category="...").
+ *
+ * On the pages opened by the cookie scanner (?lcookies_scan=...) it answers like the browser does
+ * there: no consent, or every category accepted.
  */
 final class ConsentHelper
 {
@@ -98,15 +102,20 @@ final class ConsentHelper
     private static function state(): array
     {
         if (self::$state === null) {
+            $app        = Factory::getApplication();
             $params     = ComponentHelper::getParams('com_lcookies');
+            $version    = max(1, (int) $params->get('policy_version', 1));
             $categories = self::categories();
+            $scan       = Scanner::mode((string) $app->getInput()->get(Scanner::PARAM, '', 'cmd'), (string) $app->get('secret'));
             $consent    = self::parse(
-                (string) Factory::getApplication()->getInput()->cookie->get(ContractBuilder::COOKIE_NAME, '', 'raw'),
-                max(1, (int) $params->get('policy_version', 1)),
+                (string) $app->getInput()->cookie->get(ContractBuilder::COOKIE_NAME, '', 'raw'),
+                $version,
                 min(395, max(1, (int) $params->get('consent_expiry_days', 180)))
             );
 
-            if ($consent !== null) {
+            if ($scan !== null) {
+                $consent = $scan === 'all' ? ['id' => '', 'v' => $version, 'cats' => array_keys($categories), 'ts' => time()] : null;
+            } elseif ($consent !== null) {
                 $consent['cats'] = array_values(array_filter($consent['cats'], static fn ($alias) => isset($categories[$alias])));
             }
 

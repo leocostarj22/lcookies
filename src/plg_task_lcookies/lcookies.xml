@@ -12,6 +12,7 @@
 	<namespace path="src">Lcsilva\Plugin\Task\Lcookies</namespace>
 	<files>
 		<folder plugin="lcookies">services</folder>
+		<folder>forms</folder>
 		<folder>language</folder>
 		<folder>src</folder>
 	</files>

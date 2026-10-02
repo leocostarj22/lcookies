@@ -20,6 +20,8 @@
  *                                                        com_lcookies), then replaces them with json if given
  *   php tests/fixture.php <joomla root> plugin <folder> <element> [json]  prints the params of a plugin,
  *                                                        then replaces them with json if given
+ *   php tests/fixture.php <joomla root> enable <folder> <element> <0|1>  prints whether a plugin is enabled, then
+ *                                                        enables or disables it
  *   php tests/fixture.php <joomla root> deluser <username>  deletes a user created by `token`
  *   php tests/fixture.php <joomla root> teardown         removes everything setup added (and all consent records)
  *
@@ -29,8 +31,8 @@
 [$script, $root, $command] = $argv + [null, null, null];
 $args = array_slice($argv, 3);
 
-if (!$root || !is_file($root . '/configuration.php') || !in_array($command, ['setup', 'params', 'consents', 'events', 'token', 'asset', 'plugin', 'deluser', 'teardown'], true)) {
-    fwrite(STDERR, "Usage: php tests/fixture.php <joomla root> setup|params|consents|events|token|asset|plugin|deluser|teardown [key=value ...]\n");
+if (!$root || !is_file($root . '/configuration.php') || !in_array($command, ['setup', 'params', 'consents', 'events', 'token', 'asset', 'plugin', 'enable', 'deluser', 'teardown'], true)) {
+    fwrite(STDERR, "Usage: php tests/fixture.php <joomla root> setup|params|consents|events|token|asset|plugin|enable|deluser|teardown [key=value ...]\n");
     exit(1);
 }
 
@@ -156,6 +158,19 @@ if ($command === 'plugin') {
     exit;
 }
 
+if ($command === 'enable') {
+    [$folder, $element, $enabled] = $args + [null, null, null];
+    $find = $db->prepare("SELECT enabled FROM {$p}extensions WHERE type = 'plugin' AND folder = ? AND element = ?");
+    $find->execute([$folder, $element]);
+    echo $find->fetchColumn(), "\n";
+
+    if ($enabled !== null) {
+        run($db, "UPDATE {$p}extensions SET enabled = ? WHERE type = 'plugin' AND folder = ? AND element = ?", [(int) $enabled, $folder, $element]);
+    }
+
+    exit;
+}
+
 if ($command === 'asset') {
     [$name, $rules] = $args + [null, null];
     $find = $db->prepare("SELECT rules FROM {$p}assets WHERE name = ?");
@@ -208,6 +223,11 @@ $content = <<<'HTML'
 <script src="/media/lctest/analytics-test.js"></script>
 <script>window.lcTestInline = (window.lcTestInline || 0) + 1;</script>
 <script>window.lcFree = true;</script>
+<script>
+  // Not declared and not blocked: the cookie scanner must report both before consent.
+  document.cookie = 'lc_scan_free=1; path=/';
+  new Image().src = location.protocol + '//localhost:' + location.port + '/media/lctest/pixel.gif';
+</script>
 <script type="module" src="/media/lctest/analytics-test-module.js"></script>
 <script>
   (function () {

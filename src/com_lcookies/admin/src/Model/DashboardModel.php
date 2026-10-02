@@ -170,6 +170,26 @@ class DashboardModel extends BaseDatabaseModel
             $alerts[] = ['info', 'COM_LCOOKIES_ALERT_NOT_BLOCKED', (string) $empty, 'index.php?option=com_lcookies&view=services'];
         }
 
+        $done = 'done';
+        $scan = $db->setQuery(
+            $db->createQuery()
+                ->select($db->quoteName(['unknown', 'issues']))
+                ->from($db->quoteName('#__lcookies_scans'))
+                ->where($db->quoteName('status') . ' = :done')
+                ->order($db->quoteName('id') . ' DESC')
+                ->bind(':done', $done)
+                ->setLimit(1)
+        )->loadAssoc();
+        $scanner = 'index.php?option=com_lcookies&view=scanner';
+
+        if (!$scan) {
+            $alerts[] = ['info', 'COM_LCOOKIES_ALERT_NEVER_SCANNED', '', $scanner];
+        } elseif ((int) $scan['issues']) {
+            $alerts[] = ['danger', 'COM_LCOOKIES_ALERT_SCAN_ISSUES', (string) $scan['issues'], $scanner];
+        } elseif ((int) $scan['unknown']) {
+            $alerts[] = ['warning', 'COM_LCOOKIES_ALERT_SCAN_UNKNOWN', (string) $scan['unknown'], $scanner];
+        }
+
         if (!$params->get('log_consents', 1)) {
             $alerts[] = ['info', 'COM_LCOOKIES_ALERT_LOGGING_OFF', '', 'index.php?option=com_config&view=component&component=com_lcookies'];
         }

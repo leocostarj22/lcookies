@@ -81,6 +81,7 @@ def clean(html, name):
     html = re.sub(r'value="COM_LCOOKIES_[A-Z_]+"', '', html)
     html = re.sub(r'>COM_LCOOKIES_[A-Z_]+</textarea>', '', html)
     html = html.replace('(e.g. COM_LCOOKIES_CAT_STATISTICS)', '')
+    html = re.sub(r'"COM_LCOOKIES_[A-Z_]+":', '', html)  # keys of Joomla.Text (an untranslated value still shows)
     bad = re.findall(r"(Fatal error|Warning:|Notice:|Deprecated:|Uncaught|Stack trace|\?\?COM_LCOOKIES|COM_LCOOKIES_[A-Z_]+)", html)
     check(name + " no PHP errors/untranslated keys", not bad, str(sorted(set(bad))[:8]))
 
@@ -92,7 +93,7 @@ def messages(html):
 
 # Reset data
 install = open(ROOT / "src/com_lcookies/admin/sql" / ("install." + ("postgresql" if DB.endswith("pg") else "mysql") + ".utf8.sql")).read().replace("#__", "jos_")
-sql("DROP TABLE IF EXISTS jos_lcookies_consents, jos_lcookies_cookies, jos_lcookies_services, jos_lcookies_categories; " + install)
+sql("DROP TABLE IF EXISTS jos_lcookies_scans, jos_lcookies_consents, jos_lcookies_cookies, jos_lcookies_services, jos_lcookies_categories; " + install)
 check("reset", sql("SELECT COUNT(*) FROM jos_lcookies_categories") == "5")
 
 # Login
@@ -392,7 +393,7 @@ rates = dict(re.findall(r'data-lcookies-rate="([a-z]+)">.*?<span>(\d+)%</span>',
 check("dashboard acceptance by category", rates == {"preferences": "33", "statistics": "67", "marketing": "33", "unclassified": "0"}, str(rates))
 check("dashboard alert: no privacy page", 'data-lcookies-alert="no_privacy_page"' in html)
 check("dashboard: no plugin/unclassified alerts by default",
-      re.findall(r'data-lcookies-alert="(\w+)"', html) == ["no_privacy_page"], re.findall(r'data-lcookies-alert="(\w+)"', html))
+      re.findall(r'data-lcookies-alert="(\w+)"', html) == ["never_scanned", "no_privacy_page"], re.findall(r'data-lcookies-alert="(\w+)"', html))
 sql("UPDATE jos_extensions SET enabled = 0 WHERE type = 'plugin' AND folder = 'system' AND element = 'lcookies'")
 sql("INSERT INTO jos_lcookies_services (category_id, alias, title, provider, description, block_patterns, state, ordering, created, modified) "
     "SELECT id, 'lcdash-svc', 'Dash', '', '', NULL, 1, 99, NOW(), NOW() FROM jos_lcookies_categories WHERE alias = 'unclassified'")
@@ -402,6 +403,84 @@ check("dashboard alerts: plugin disabled, unclassified, not blocked",
       re.findall(r'data-lcookies-alert="(\w+)"', html))
 sql("UPDATE jos_extensions SET enabled = 1 WHERE type = 'plugin' AND folder = 'system' AND element = 'lcookies'")
 sql("DELETE FROM jos_lcookies_services WHERE alias = 'lcdash-svc'")
+
+# Cookie scanner (the browser pass runs in e2e_front.mjs; here its results are posted directly) ------
+def scan_token(html):
+    m = re.search(r'"com_lcookies.scanner":\{[^}]*"token":"([a-f0-9]{32})"', html)
+    return m.group(1) if m else ""
+
+
+def scan(task, data, tok, opener=None):
+    try:
+        return json.loads(req(f"?option=com_lcookies&format=json&task=scan.{task}", dict(data, **{tok: "1"}), opener=opener))
+    except ValueError:
+        return {"success": False}
+
+
+html = req("?option=com_lcookies&view=scanner")
+clean(html, "scanner (no scan yet)")
+check("scanner view: start button, no results yet", "data-lcookies-scan-start" in html and "data-lcookies-scan-none" in html)
+check("scanner in the submenu", "view=scanner" in req("?option=com_lcookies&view=categories"))
+stok = scan_token(html)
+check("scan refused without token", scan("start", {}, "0" * 32).get("success") is False)
+started = scan("start", {}, stok)
+sid, pages = started.get("data", {}).get("id", 0), started.get("data", {}).get("pages", [])
+check("scan started: home page first, token for the browser pass", started.get("success") and pages[:1] == [BASE + "/"]
+      and re.fullmatch(rf"{sid}\.\d+\.[0-9a-f]{{64}}", started["data"].get("param", "")), json.dumps(started)[:300])
+page0 = scan("page", {"id": sid, "page": 0}, stok)
+check("server pass: session cookie set by the home page", page0.get("success") and page0["data"]["status"] == 200
+      and any(re.fullmatch(r"[a-f0-9]{32}", c["name"]) for c in page0["data"]["cookies"]), json.dumps(page0)[:300])
+check("server pass: unknown page refused", scan("page", {"id": sid, "page": 999}, stok).get("success") is False)
+browser = [{"page": 0, "before": {"cookies": ["_fbp"], "hosts": ["www.google-analytics.com", "bad host!"]},
+            "after": {"cookies": ["_ga", "lcmystery", 5], "local": ["lcls"], "session": []}},
+           {"page": 99, "before": {}, "after": {"cookies": ["ignored"]}}, "junk"]
+done = scan("finish", {"id": sid, "browser": json.dumps(browser)}, stok)
+check("scan finished: unknown and problems counted", done.get("success") and done["data"] == {"id": sid, "unknown": 4, "issues": 2}, json.dumps(done)[:300])
+check("finished scan cannot be changed", scan("page", {"id": sid, "page": 0}, stok).get("success") is False)
+html = req("?option=com_lcookies&view=scanner")
+clean(html, "scanner results")
+items = dict(re.findall(r'data-lcookies-scan-item="([^"]+)">(.*?)</tr>', html, re.S))
+check("scan results: session cookie declared, not a problem", any(k.startswith("cookie:") and re.fullmatch(r"cookie:[a-f0-9]{32}", k)
+      and "Declared" in v and "Before consent" not in v for k, v in items.items()), list(items))
+check("scan results: _ga suggests the library service", "Google Analytics 4" in items.get("cookie:_ga", "") and "transfer.preset" in items.get("cookie:_ga", ""))
+check("scan results: _fbp before consent", "Before consent" in items.get("cookie:_fbp", "") and "Meta" in items.get("cookie:_fbp", ""))
+check("scan results: malformed entries dropped", "cookie:ignored" not in items and "cookie:5" not in items and "bad host" not in html)
+check("scan results: request before consent matched to a library service",
+      re.search(r'data-lcookies-scan-request="www.google-analytics.com">.*?Not blocked.*?Google Analytics 4', html, re.S) is not None)
+adopt = re.search(r'href="([^"]*task=scan.adopt[^"]*name=lcmystery[^"]*)"', html)
+html2 = req(adopt.group(1).replace("&amp;", "&").split("index.php", 1)[1]) if adopt else ""
+check("declare an unknown cookie: form filled in from the scan", 'value="lcmystery"' in html2 and 'value="scanner"' in html2, html2[:200])
+req("?option=com_lcookies&task=cookie.cancel&" + token(html2) + "=1", {}) if html2 else None
+html = req("?option=com_lcookies&view=scanner")
+form = re.search(r'name="preset" value="google-analytics".*?name="([a-f0-9]{32})" value="1"', html, re.S)
+html = req("?option=com_lcookies", {"task": "transfer.preset", "preset": "google-analytics", "return": "scanner", form.group(1) if form else "x": "1"})
+check("add the suggested service, back on the scanner", 'id="lcookies-scanner"' in html
+      and sql("SELECT COUNT(*) FROM jos_lcookies_services WHERE alias = 'google-analytics'") == "1", str(messages(html)))
+html = req("?option=com_lcookies&view=dashboard")
+check("dashboard alert: problems found by the last scan", 'data-lcookies-alert="scan_issues"' in html, re.findall(r'data-lcookies-alert="(\w+)"', html))
+sql("DELETE FROM jos_lcookies_cookies WHERE service_id IN (SELECT id FROM jos_lcookies_services WHERE alias = 'google-analytics')")
+sql("DELETE FROM jos_lcookies_services WHERE alias = 'google-analytics'")
+
+# Scheduled scan (plg_task_lcookies): server pass only, mail template installed
+check("mail template of the scheduled scan installed", sql("SELECT COUNT(*) FROM jos_mail_templates WHERE template_id = 'plg_task_lcookies.scan'") == "1")
+sql("DELETE FROM jos_scheduler_tasks WHERE type = 'lcookies.scan'")
+req("?option=com_scheduler&task=task.add&type=lcookies.scan")
+html = req("?option=com_scheduler&view=task&layout=edit")
+check("scan task form has the e-mail field", 'name="jform[params][emails]"' in html)
+html = req("?option=com_scheduler&view=task&layout=edit&id=0", {
+    "jform[title]": "LCookies scan", "jform[type]": "lcookies.scan", "jform[id]": "0", "jform[state]": "1",
+    "jform[priority]": "0", "jform[params][individual_log]": "0", "jform[params][emails]": "lcscan@example.com",
+    "jform[execution_rules][rule-type]": "interval-days", "jform[execution_rules][interval-days]": "7",
+    "jform[execution_rules][exec-time]": "04:00", "task": "task.save", token(html): "1"})
+task_id = sql("SELECT id FROM jos_scheduler_tasks WHERE type = 'lcookies.scan'")
+check("scan task saved", task_id.isdigit(), str(messages(html)))
+html = req("?option=com_scheduler&view=tasks")
+run = req(f"?option=com_ajax&format=json&plugin=RunSchedulerTest&group=system&id={task_id}&{token(html)}=1")
+row = sql("SELECT source, status, pages FROM jos_lcookies_scans ORDER BY id DESC LIMIT 1").split()
+check("scan task runs the server pass", '"status":0' in run and row[:2] == ["task", "done"] and row[2] != "0", run[:300] + str(row))
+html = req("?option=com_lcookies&view=scanner")
+check("scheduled scan shown without the browser pass", "Only the server responses were checked" in html and "Scheduled task" in html)
+sql("DELETE FROM jos_scheduler_tasks WHERE type = 'lcookies.scan'")
 
 # Privacy requests (plg_privacy_lcookies) ---------------------------------------------------------
 q = '"' if DB.endswith("pg") else "`"
@@ -468,6 +547,9 @@ check("view permission granted: list visible, no export button", U2 in html and 
 r = req(f"?option=com_lcookies&task=consents.export&{token(html)}=1", opener=mop, raw=True)
 body = r.read().decode("utf-8", "replace")
 check("export refused without export permission", "created_utc" not in body, body[:200])
+html = req("?option=com_lcookies&view=scanner", opener=mop)
+check("manager without scan permission: results only, no start button", 'id="lcookies-scanner"' in html and "data-lcookies-scan-start" not in html)
+check("manager without scan permission: scan refused", scan("start", {}, token(req("?option=com_lcookies&view=services", opener=mop)), opener=mop).get("success") is False)
 sql(f"UPDATE jos_assets SET rules = '{rules}' WHERE name = 'com_lcookies'")
 sql("DELETE FROM jos_user_usergroup_map WHERE user_id = 9900; DELETE FROM jos_users WHERE id = 9900; DELETE FROM jos_session WHERE userid = 9900")
 

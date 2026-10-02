@@ -46,6 +46,36 @@ O plugin *Privacidade - LCookies* liga os registos de consentimento aos pedidos 
 | *Desligar da conta* (por omissão) | Os registos ficam guardados, sem `user_id` | Manter a prova de consentimento, que passa a ser só um id aleatório e hashes |
 | *Apagar os registos* | Os registos são eliminados | Remover tudo |
 
+## Scanner de cookies
+
+O scanner (*Componentes → LCookies → Scanner de cookies*, permissão *Executar o scanner de cookies*) analisa o site em três passagens:
+
+| Passagem | Como | O que encontra |
+|---|---|---|
+| Servidor | Pede cada página sem cookies | Cookies criados pelo servidor antes do consentimento (`Set-Cookie`) |
+| Browser, sem consentimento | Abre cada página num iframe com `?lcookies_scan=none.<token>` | Cookies novos e pedidos a outros sites antes de o visitante escolher |
+| Browser, tudo aceite | Abre cada página num iframe com `?lcookies_scan=all.<token>` | Todos os cookies e chaves de `localStorage`/`sessionStorage` |
+
+**Páginas analisadas:** a página inicial, a página de privacidade, os itens de menu públicos e os endereços extra das opções (separador *Scanner de cookies*).
+
+**Passagens no browser:** só funcionam quando o site e o backend estão no mesmo endereço (mesma origem). Caso contrário, e na tarefa agendada, só corre a passagem do servidor.
+
+**Modo de scan:** o token é assinado com o `secret` do site e vale uma hora. Com um token válido:
+- o LCookies ignora a escolha guardada no browser, tanto no JavaScript como no `ConsentHelper`;
+- não mostra o banner e não grava nada (cookie, registo ou evento);
+- a página não vai para cache.
+
+Templates e extensões não precisam de fazer nada para suportar o scanner. Se uma extensão decide no servidor com o `ConsentHelper`, o scan com tudo aceite também apanha o que ela gera.
+
+**Resultados:** cada item é comparado com os cookies declarados (mesmas regras de nome: exato, prefixo ou expressão regular) e com a biblioteca de serviços.
+- Um cookie não declarado tem os botões *Declarar*, que abre o formulário já preenchido com a origem *Scanner*, e *Adicionar o serviço*, quando a biblioteca o conhece.
+- É um **problema** um cookie criado antes do consentimento que não pertence a uma categoria obrigatória, ou um pedido a outro site antes do consentimento que não pertence a um serviço obrigatório.
+
+**Tarefa agendada:** a rotina *LCookies - Analisar os cookies do site* (`plg_task_lcookies`) faz a passagem do servidor.
+- Quando há problemas ou cookies não declarados, envia o template de e-mail `plg_task_lcookies.scan` (editável em *Sistema → Templates de e-mail*).
+- O e-mail vai para os endereços da tarefa ou, se a tarefa não tiver endereços, para os Super Utilizadores que recebem e-mails do sistema.
+- Se a tarefa correr pela linha de comandos, defina `$live_site` no `configuration.php` para os endereços das páginas ficarem certos.
+
 ## Regra de ouro: cache
 
 A forma mais segura é deixar o código sempre no HTML e deixar o LCookies bloqueá-lo:
