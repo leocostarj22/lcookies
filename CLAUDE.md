@@ -3,10 +3,10 @@
 Sistema de consentimento de cookies para Joomla 5.x e 6.x. Plano completo: `docs/PLAN.md`. Tarefas: `TODO.md`.
 
 ## Estado atual
-- **Fase concluída:** 5 — Extras (v0.5.0; ver `docs/fases/fase-5.md`). Releases anteriores: 0.1.0–0.4.0; servidor de atualizações ativo.
-- **Testes:** admin 124/124, API 42/42, front 106/106, idioma 12/12 nos 4 sites de teste; atualização 0.4.0 → 0.5.0 testada (MariaDB e PostgreSQL).
-- **Onde parámos (2026-10-02):** commit `chore(release): 0.5.0` feito; o autor cria e envia a tag `v0.5.0` (a Action publica a release).
-  - **Em curso (autor: "avance com a sequência sugerida"):** extras antes da 1.0 (v0.6.0) — CSP, consentimento entre subdomínios e histórico das versões da política feitos; a seguir fechar a v0.6.0 e passar à Fase 6 — Qualidade.
+- **Fase concluída:** 5.1 — Extras antes da 1.0 (v0.6.0; ver `docs/fases/fase-5.1.md`). Antes: Fase 5 (v0.5.0), releases 0.1.0–0.4.0; servidor de atualizações ativo.
+- **Testes:** admin 130/130, API 42/42, front 116/116, idioma 12/12 nos 4 sites de teste; atualizações 0.4.0 → 0.5.0 → 0.6.0 testadas (MariaDB e PostgreSQL).
+- **Onde parámos (2026-10-02):** commit `chore(release): 0.6.0` feito; o autor envia e cria as tags `v0.5.0` (commit `60e54e2`) e `v0.6.0`.
+  - **A seguir:** Fase 6 — Qualidade (Docker J5/J6, PHPStan/PHP-CS-Fixer, testes de instalação/atualização/desinstalação no CI, auditoria de acessibilidade, revisão de traduções).
   - Testes e desenvolvimento só neste ambiente (sem testes em sites externos).
 
 ## Fluxo de trabalho por fase

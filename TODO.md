@@ -69,7 +69,7 @@ Ao fechar uma fase: marcar tudo, preencher `docs/fases/fase-N.md` e atualizar o 
 - [x] `plg_privacy_lcookies` (exportação + remoção: desligar da conta ou apagar)
 - [x] `ConsentHelper::has()` + evento `onLCookiesConsentChange` (`docs/developers.md`)
 
-## Extras antes da 1.0 (v0.6.0)
+## Fase 5.1 — Extras antes da 1.0 ✅ (v0.6.0, ver `docs/fases/fase-5.1.md`)
 - [x] Content-Security-Policy: nonce nos scripts ativados após consentimento e na pré-visualização; hash do script inicial no modo hashes
 - [x] Consentimento partilhado entre subdomínios (normalização e validação de `cookie_domain`, só usado nos hosts do domínio, recurso ao host atual se o browser recusar, alerta no painel)
 - [x] Histórico das versões da política no painel (escolhas, visitantes e aceitação por versão) + botão "Nova versão da política"
