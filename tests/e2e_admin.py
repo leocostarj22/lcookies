@@ -1,11 +1,13 @@
 """End-to-end test of the com_lcookies backend against a running Joomla site.
 
-Usage: python3 tests/e2e_admin.py <site-url> <database-name>
-  e.g. python3 tests/e2e_admin.py http://127.0.0.1:8106 j6      (MySQL/MariaDB)
-       python3 tests/e2e_admin.py http://127.0.0.1:8160 j6pg    (PostgreSQL: name ends in "pg")
+Usage: python3 tests/e2e_admin.py <site-url> <joomla root | database-name>
+  e.g. python3 tests/e2e_admin.py http://127.0.0.1:8106 /var/www/joomla   (SQL through tests/sql.php, any database)
+       python3 tests/e2e_admin.py http://127.0.0.1:8106 j6                (local setup: MariaDB socket in LC_ENV)
+       python3 tests/e2e_admin.py http://127.0.0.1:8160 j6pg              (local setup: PostgreSQL, name ends in "pg")
 
 Environment (defaults match the local test setup described in docs/fases/fase-1.md):
   LC_ENV     folder with php, mariadb/ and my.sock   (default /tmp/claude-1000/lc)
+  LC_PHP     PHP CLI binary                          (default $LC_ENV/php, else php)
   LC_ADMIN   administrator username / password      (default admin / Admin123456789!)
 The test resets the LCookies tables and expects table prefix jos_.
 """
@@ -17,6 +19,10 @@ BASE = sys.argv[1]
 DB = sys.argv[2]
 L = os.environ.get("LC_ENV", "/tmp/claude-1000/lc")
 ROOT = Path(__file__).resolve().parent.parent
+PHP = os.environ.get("LC_PHP") or (f"{L}/php" if os.path.isfile(f"{L}/php") else "php")
+SITE = DB if os.path.isfile(os.path.join(DB, "configuration.php")) else None
+PG = (subprocess.run([PHP, str(ROOT / "tests" / "sql.php"), SITE, "--type"], capture_output=True, text=True).stdout.strip() == "pgsql"
+      if SITE else DB.endswith("pg"))
 ADMIN_USER, ADMIN_PASS = os.environ.get("LC_ADMIN", "admin:Admin123456789!").split(":", 1)
 jar = http.cookiejar.CookieJar()
 op = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
@@ -24,9 +30,15 @@ fails = []
 
 
 def sql(q):
-    if DB.endswith("pg"):
+    if PG:
         q = re.sub(r"GROUP_CONCAT\((\w+) ORDER BY (\w+)\)", r"string_agg(\1, ',' ORDER BY \2)", q)
-        r = subprocess.run([f"{L}/php", str(ROOT / "tests" / "pgq.php"), DB], input=q, capture_output=True, text=True)
+    if SITE:
+        r = subprocess.run([PHP, str(ROOT / "tests" / "sql.php"), SITE], input=q, capture_output=True, text=True)
+        if r.stderr.strip():
+            print("SQLERR", r.stderr.strip()[:300])
+        return r.stdout.strip()
+    if PG:
+        r = subprocess.run([PHP, str(ROOT / "tests" / "pgq.php"), DB], input=q, capture_output=True, text=True)
         if r.stderr.strip():
             print("SQLERR", r.stderr.strip()[:300])
         return r.stdout.strip()
@@ -92,7 +104,7 @@ def messages(html):
 
 
 # Reset data
-install = open(ROOT / "src/com_lcookies/admin/sql" / ("install." + ("postgresql" if DB.endswith("pg") else "mysql") + ".utf8.sql")).read().replace("#__", "jos_")
+install = open(ROOT / "src/com_lcookies/admin/sql" / ("install." + ("postgresql" if PG else "mysql") + ".utf8.sql")).read().replace("#__", "jos_")
 sql("DROP TABLE IF EXISTS jos_lcookies_scans, jos_lcookies_consents, jos_lcookies_cookies, jos_lcookies_services, jos_lcookies_categories; " + install)
 check("reset", sql("SELECT COUNT(*) FROM jos_lcookies_categories") == "5")
 
@@ -362,7 +374,7 @@ codes = [site_consent(U1, ["necessary", "statistics"], "custom", "/index.php?ema
          site_consent(U1, ["necessary"], "reject_all"),
          site_consent(U2, ["necessary", "preferences", "statistics", "marketing"], "accept_all")]
 check("site endpoint records consents", codes == [200, 200, 200], str(codes))
-old = "NOW() - INTERVAL '30 months'" if DB.endswith("pg") else "NOW() - INTERVAL 30 MONTH"
+old = "NOW() - INTERVAL '30 months'" if PG else "NOW() - INTERVAL 30 MONTH"
 sql("INSERT INTO jos_lcookies_consents (consent_uuid, action, categories, policy_version, ip_hash, ua_hash, url, language, created) VALUES "
     f"('cccccccc-dddd-4eee-8fff-000000000000', 'custom', '[\"necessary\"]', 1, '', '', '=HYPERLINK(1)', 'en-GB', {old})")
 
@@ -534,7 +546,7 @@ check("scheduled scan shown without the browser pass", "Only the server response
 sql("DELETE FROM jos_scheduler_tasks WHERE type = 'lcookies.scan'")
 
 # Privacy requests (plg_privacy_lcookies) ---------------------------------------------------------
-q = '"' if DB.endswith("pg") else "`"
+q = '"' if PG else "`"
 cols = ", ".join(f"{q}{c}{q}" for c in ["id", "name", "username", "email", "password", "block", "sendEmail", "registerDate", "params", "requireReset"])
 sql("DELETE FROM jos_user_usergroup_map WHERE user_id = 9901; DELETE FROM jos_users WHERE id = 9901")
 sql(f"INSERT INTO jos_users ({cols}) VALUES (9901, 'LC Privacy', 'lcprivacy', 'lcprivacy@example.com', 'x', 0, 0, NOW(), '{{}}', 0)")
@@ -573,10 +585,10 @@ sql("DELETE FROM jos_privacy_requests WHERE email = 'lcprivacy@example.com'")
 sql("DELETE FROM jos_user_usergroup_map WHERE user_id = 9901; DELETE FROM jos_users WHERE id = 9901")
 
 # Permissions: a Manager allowed to manage the component still needs the consents permissions
-php = f"{L}/php"
+php = PHP
 pw = subprocess.run([php, "-r", "echo password_hash('Manager123456789!', PASSWORD_BCRYPT);"], capture_output=True, text=True).stdout
 sql("DELETE FROM jos_user_usergroup_map WHERE user_id = 9900; DELETE FROM jos_users WHERE id = 9900")
-q = '"' if DB.endswith("pg") else "`"
+q = '"' if PG else "`"
 cols = ", ".join(f"{q}{c}{q}" for c in ["id", "name", "username", "email", "password", "block", "sendEmail", "registerDate", "params", "requireReset"])
 sql(f"INSERT INTO jos_users ({cols}) "
     f"VALUES (9900, 'LC Manager', 'lcmanager', 'lcmanager@example.com', '{pw}', 0, 0, NOW(), '{{}}', 0)")
