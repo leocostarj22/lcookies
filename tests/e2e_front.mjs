@@ -471,23 +471,23 @@ async function main() {
     const newLayout = savedLayout === 'bar-top' ? 'bar-bottom' : 'bar-top';
     await admin.selectOption('#jform_layout', newLayout);
     await admin.selectOption('#jform_theme', 'dark');
-    await admin.waitForFunction((layout) => document.querySelector('#appearance [data-lcookies-preview] iframe')
-      .contentDocument?.querySelector(`.lcookies-banner--${layout}`), newLayout, { timeout: 15000 }).catch(() => {});
+    await preview.locator(`.lcookies-banner--${newLayout}`).waitFor({ state: 'attached', timeout: 15000 }).catch(() => {});
     check('preview follows the layout and theme before saving', (await rendered('[data-lcookies-banner]', 'class') || '').includes(`--${newLayout}`)
       && await rendered('#lcookies', 'data-lcookies-theme') === 'dark');
     await admin.click('button[role="tab"][aria-controls="texts"]');
     await admin.fill('#jform_text_title', 'Preview title');
     const textsPreview = admin.frameLocator('#texts [data-lcookies-preview] iframe');
-    await admin.waitForFunction(() => document.querySelector('#texts [data-lcookies-preview] iframe')
-      .contentDocument?.querySelector('#lcookies-banner-title')?.textContent === 'Preview title', null, { timeout: 15000 }).catch(() => {});
+    await textsPreview.locator('#lcookies-banner-title', { hasText: 'Preview title' }).waitFor({ timeout: 15000 }).catch(() => {});
     check('preview follows the texts', await textsPreview.locator('#lcookies-banner-title').textContent() === 'Preview title');
-    await textsPreview.locator('[data-lcookies-banner] [data-lcookies-action="accept"]').click();
+    // Inside the scaled, sandboxed frame Playwright cannot click by position: dispatch the click in the frame.
+    await textsPreview.locator('[data-lcookies-banner] [data-lcookies-action="accept"]').evaluate((button) => button.click());
     check('a choice in the preview only hides the banner', !(await textsPreview.locator('[data-lcookies-banner]').isVisible())
       && !(await scanContext.cookies(url)).some((c) => c.name === 'lcookies_consent' && c.value !== ownChoice) && records().length === recordsPreview);
     await admin.click('#texts [data-lcookies-preview-show="preferences"]');
-    await admin.waitForFunction(() => document.querySelector('#texts [data-lcookies-preview] iframe')
-      .contentDocument?.querySelector('[data-lcookies-preferences]')?.open, null, { timeout: 15000 }).catch(() => {});
+    await textsPreview.locator('[data-lcookies-preferences][open]').waitFor({ timeout: 15000 }).catch(() => {});
     check('preview of the preferences', await textsPreview.locator('[data-lcookies-preferences]').evaluate((d) => d.open));
+    check('preview isolated from the backend (sandbox, opaque origin)', await admin.evaluate(() => document.querySelector('#texts [data-lcookies-preview] iframe').contentDocument === null)
+      && await textsPreview.locator('body').evaluate(() => { try { return document.cookie === undefined; } catch (e) { return true; } }));
     violations = await textsPreview.locator('body').evaluate(async (body, axeSource) => {
       body.ownerDocument.defaultView.eval(axeSource);
       const result = await body.ownerDocument.defaultView.axe.run(body.ownerDocument.getElementById('lcookies'), { resultTypes: ['violations'] });
@@ -537,8 +537,9 @@ async function main() {
       await cspAdmin.waitForSelector('a[href*="task=logout"]', { state: 'attached' });
       await cspAdmin.goto(`${url}/administrator/index.php?option=com_config&view=component&component=com_lcookies`);
       await cspAdmin.click('button[role="tab"][aria-controls="appearance"]');
-      const cspPreview = await cspAdmin.waitForFunction(() => document.querySelector('#appearance [data-lcookies-preview] iframe')
-        .contentWindow?.LCookies?.open, null, { timeout: 15000 }).then(() => true, () => false);
+      const cspFrame = cspAdmin.frameLocator('#appearance [data-lcookies-preview] iframe');
+      const cspPreview = await cspFrame.locator('[data-lcookies-banner]').waitFor({ state: 'attached', timeout: 15000 })
+        .then(() => cspFrame.locator('body').evaluate(() => typeof window.LCookies?.open === 'function'), () => false);
       check('nonce CSP: preview of the options works', cspPreview);
       await cspAdminContext.close();
 

@@ -29,7 +29,13 @@
     'functionality_storage', 'personalization_storage', 'security_storage'];
 
   function readConsent() {
-    var m = d.cookie.match(new RegExp('(?:^|;\\s*)' + c.n + '=([^;]*)'));
+    var m = null;
+
+    try {
+      m = d.cookie.match(new RegExp('(?:^|;\\s*)' + c.n + '=([^;]*)'));
+    } catch (e) {
+      // Cookies not available (sandboxed frame such as the backend preview).
+    }
 
     if (!m) {
       return null;
@@ -53,6 +59,15 @@
 
   if (c.scan) {
     state.consent = c.scan === 'all' ? { id: '', v: c.v, cats: c.all.slice(), ts: Math.floor(Date.now() / 1000) } : null;
+
+    // Take the scan token out of the address before other scripts (e.g. statistics) read it.
+    try {
+      var address = new URL(w.location.href);
+      address.searchParams.delete('lcookies_scan');
+      w.history.replaceState(w.history.state, '', address.href);
+    } catch (e) {
+      // Old browser: the token expires within the hour anyway.
+    }
   } else if (c.preview) {
     state.consent = null;
   }

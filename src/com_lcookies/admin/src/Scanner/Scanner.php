@@ -163,7 +163,8 @@ final class Scanner
         }
 
         try {
-            $response = HttpFactory::getHttp()->get($url, ['User-Agent' => 'LCookies-Scanner/1.0'], 15);
+            // Redirects are not followed: a page of the site must not make the server request another address.
+            $response = HttpFactory::getHttp(['follow_location' => false])->get($url, ['User-Agent' => 'LCookies-Scanner/1.0'], 15);
         } catch (\Throwable) {
             return ['status' => 0, 'cookies' => []];
         }
