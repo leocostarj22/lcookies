@@ -119,6 +119,12 @@ O LCookies funciona com a CSP do plugin *Sistema - Cabeçalhos HTTP* do Joomla, 
 - **Cache de páginas:** o *Sistema - Cache de página* guarda o HTML com o nonce e o cabeçalho do primeiro pedido. Isto é uma limitação do core com nonces. Use a cache de página com uma CSP só por domínios, ou não use nonces.
 - **Domínios dos serviços:** a CSP tem de permitir os domínios dos serviços que o site usa (ex. `www.googletagmanager.com` em `script-src` e `www.youtube-nocookie.com` em `frame-src`). O LCookies só decide quando os serviços carregam.
 
+## Quem pode guardar código dos serviços
+
+O código de cabeçalho e de fim de página dos serviços corre no site sem filtro, com a mesma origem do backend. Por isso só o podem alterar ou importar os Super Utilizadores e os grupos com *Sem filtragem* em *Configuração Global → Filtros de texto*, a mesma regra que o Joomla aplica ao HTML dos artigos.
+
+Os outros grupos com permissão de edição veem estes campos só de leitura. Na API e na importação JSON, o código que enviam é ignorado.
+
 ## Regra de ouro: cache
 
 A forma mais segura é deixar o código sempre no HTML e deixar o LCookies bloqueá-lo:

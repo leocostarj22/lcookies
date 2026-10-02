@@ -302,7 +302,8 @@ check("batch moves it back", sql("SELECT category_id FROM jos_lcookies_services 
 clean(html, "services after batch")
 
 # Service library, export and import ---------------------------------------------------------------
-def upload(path, fields, filename, content):
+def upload(path, fields, filename, content, opener=None):
+    content = content.encode() if isinstance(content, str) else content
     boundary = "----lcookies" + str(abs(hash(content)))
     body = b""
     for k, v in fields.items():
@@ -310,7 +311,7 @@ def upload(path, fields, filename, content):
     body += (f'--{boundary}\r\nContent-Disposition: form-data; name="import_file"; filename="{filename}"\r\n'
              f'Content-Type: application/json\r\n\r\n').encode() + content + f"\r\n--{boundary}--\r\n".encode()
     request = urllib.request.Request(BASE + "/administrator/index.php" + path, body, {"Content-Type": f"multipart/form-data; boundary={boundary}"})
-    with op.open(request) as r:
+    with (opener or op).open(request) as r:
         return r.read().decode("utf-8", "replace")
 
 
@@ -604,6 +605,19 @@ mop = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(mjar))
 login(mop, "lcmanager", "Manager123456789!")
 html = req("?option=com_lcookies&view=services", opener=mop)
 check("manager can manage the component", "This website" in html, html[:200])
+sql("UPDATE jos_assets SET rules = '{\"core.manage\":{\"6\":1},\"core.edit\":{\"6\":1},\"core.create\":{\"6\":1}}' WHERE name = 'com_lcookies'")
+html = req("?option=com_lcookies&task=service.edit&id=1", opener=mop)
+check("manager: service code fields read-only (Text Filters)", re.search(r'<textarea[^>]*name="jform\[head_code\]"[^>]*readonly', html) is not None
+      and "No Filtering" in html, re.findall(r'<textarea[^>]*name="jform\[head_code\]"[^>]*>', html))
+req("?option=com_lcookies&view=service&layout=edit&id=1", {"task": "service.cancel", token(html): "1"}, opener=mop)
+html = req("?option=com_lcookies&view=presets", opener=mop)
+code_json = json.dumps({"format": "lcookies", "version": 1, "services": [{"alias": "lcadm-code", "title": "Code", "category": "statistics",
+                        "head_code": "<script>window.lcPwned = 1;</script>", "cookies": []}]})
+html = upload("?option=com_lcookies", {"task": "transfer.import", token(html): "1"}, "code.json", code_json, opener=mop)
+check("manager: imported service without its code", sql("SELECT head_code FROM jos_lcookies_services WHERE alias = 'lcadm-code'") == ""
+      and "were not imported" in html, sql("SELECT head_code FROM jos_lcookies_services WHERE alias = 'lcadm-code'") + str(messages(html)))
+sql("DELETE FROM jos_lcookies_services WHERE alias = 'lcadm-code'")
+sql("UPDATE jos_assets SET rules = '{\"core.manage\":{\"6\":1}}' WHERE name = 'com_lcookies'")
 html = req("?option=com_lcookies&view=dashboard", opener=mop)
 check("manager dashboard without consent statistics", 'id="lcookies-dashboard"' in html and 'id="lcookies-stats"' not in html
       and 'id="lcookies-policies"' not in html and "dashboard.newPolicy" not in html, html[:200])

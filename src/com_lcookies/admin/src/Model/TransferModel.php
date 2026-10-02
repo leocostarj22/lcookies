@@ -13,6 +13,7 @@ namespace Lcsilva\Component\Lcookies\Administrator\Model;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Model\BaseDatabaseModel;
 use Joomla\Database\ParameterType;
+use Lcsilva\Component\Lcookies\Administrator\Helper\LcookiesHelper;
 use Lcsilva\Component\Lcookies\Administrator\Table\AbstractLcookiesTable;
 
 // phpcs:disable PSR1.Files.SideEffects
@@ -284,6 +285,15 @@ class TransferModel extends BaseDatabaseModel
             $report['services']['skipped']++;
 
             return;
+        }
+
+        // Code that runs on the site only from users who may store it (as in the service form).
+        if (!LcookiesHelper::canStoreCode($this->getCurrentUser())) {
+            if (trim((string) ($data['head_code'] ?? '')) !== '' || trim((string) ($data['body_code'] ?? '')) !== '') {
+                $report['errors'][] = Text::sprintf('COM_LCOOKIES_TRANSFER_CODE_SKIPPED', $label);
+            }
+
+            unset($data['head_code'], $data['body_code']);
         }
 
         $row = $this->values($data, [

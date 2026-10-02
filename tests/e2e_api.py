@@ -212,6 +212,16 @@ try:
         fixture("asset", "com_lcookies", json.dumps({"core.manage": {"6": 1}, "lcookies.consents.view": {"6": 1}}))
         status, _ = call("GET", "/consents", token=manager)
         check("consents readable with the permission", status == 200, status)
+        # Code that runs on the site: only Super Users and groups with "No Filtering" (Text Filters).
+        fixture("asset", "com_lcookies", json.dumps({"core.manage": {"6": 1}, "core.edit": {"6": 1}}))
+        call("PATCH", "/services/1", {"head_code": "<!-- lcapi admin code -->"}, ADMIN)
+        status, _ = call("PATCH", "/services/1", {"head_code": "<script>window.lcPwned = 1;</script>", "provider": "lcapi-manager"}, manager)
+        status2, doc = call("GET", "/services/1", token=ADMIN)
+        attrs = doc.get("data", {}).get("attributes", {}) if isinstance(doc, dict) else {}
+        check("manager without unfiltered HTML cannot change code (kept as stored)", status == 200
+              and attrs.get("head_code") == "<!-- lcapi admin code -->" and attrs.get("provider") == "lcapi-manager",
+              (status, attrs.get("head_code"), attrs.get("provider")))
+        call("PATCH", "/services/1", {"provider": "", "head_code": ""}, ADMIN)
     finally:
         fixture("plugin", "user", "token", token_params)
         fixture("asset", "root.1", root_rules)

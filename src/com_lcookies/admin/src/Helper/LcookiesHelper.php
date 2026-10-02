@@ -10,8 +10,11 @@
 
 namespace Lcsilva\Component\Lcookies\Administrator\Helper;
 
+use Joomla\CMS\Access\Access;
+use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Language\Language;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\User\User;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -98,6 +101,33 @@ abstract class LcookiesHelper
         }
 
         return Text::plural('COM_LCOOKIES_DURATION_N_' . strtoupper($unit), $value);
+    }
+
+    /**
+     * Whether a user may store code that runs on the site unchanged (the head and body code of
+     * services): Super Users and the groups with "No Filtering" in Global Configuration → Text
+     * Filters, as for articles. Code on the site runs on the same origin as the backend, so it
+     * could act as any administrator who visits the site.
+     *
+     * @param   User  $user  The user.
+     *
+     * @return  boolean
+     */
+    public static function canStoreCode(User $user): bool
+    {
+        if ($user->authorise('core.admin')) {
+            return true;
+        }
+
+        $filters = ComponentHelper::getParams('com_config')->get('filters');
+
+        foreach (Access::getGroupsByUser((int) $user->id) as $group) {
+            if (isset($filters->$group->filter_type) && strtoupper((string) $filters->$group->filter_type) === 'NONE') {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

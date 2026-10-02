@@ -11,6 +11,7 @@
 namespace Lcsilva\Component\Lcookies\Administrator\Model;
 
 use Joomla\Database\ParameterType;
+use Lcsilva\Component\Lcookies\Administrator\Helper\LcookiesHelper;
 
 // phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
@@ -38,6 +39,58 @@ class ServiceModel extends AbstractItemModel
      * @var  array
      */
     protected $batch_commands = ['service_category_id' => 'batchCategory'];
+
+    /**
+     * Fields with code that runs on the site.
+     */
+    private const CODE_FIELDS = ['head_code', 'body_code'];
+
+    /**
+     * The form; the code fields are read-only for users who may not store code
+     * (LcookiesHelper::canStoreCode()). The API uses the same form.
+     *
+     * @param   array    $data      Data for the form.
+     * @param   boolean  $loadData  True if the form is to load its own data.
+     *
+     * @return  \Joomla\CMS\Form\Form
+     */
+    public function getForm($data = [], $loadData = true)
+    {
+        $form = parent::getForm($data, $loadData);
+
+        if (!LcookiesHelper::canStoreCode($this->getCurrentUser())) {
+            foreach (self::CODE_FIELDS as $field) {
+                $form->setFieldAttribute($field, 'type', 'textarea');
+                $form->setFieldAttribute($field, 'readonly', 'true');
+                $form->setFieldAttribute($field, 'description', 'COM_LCOOKIES_FIELD_CODE_LOCKED_DESC');
+            }
+        }
+
+        return $form;
+    }
+
+    /**
+     * Validates the data; the code sent by users who may not store code is dropped, so the stored
+     * code stays as it is (backend form and API).
+     *
+     * @param   \Joomla\CMS\Form\Form  $form   The form.
+     * @param   array                    $data   The data.
+     * @param   ?string                  $group  Field group.
+     *
+     * @return  array|boolean
+     */
+    public function validate($form, $data, $group = null)
+    {
+        $valid = parent::validate($form, $data, $group);
+
+        if (\is_array($valid) && !LcookiesHelper::canStoreCode($this->getCurrentUser())) {
+            foreach (self::CODE_FIELDS as $field) {
+                unset($valid[$field]);
+            }
+        }
+
+        return $valid;
+    }
 
     /**
      * Moves services to another category, at the end of its ordering.
