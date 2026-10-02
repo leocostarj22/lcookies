@@ -62,6 +62,7 @@
 			<filename>config.xml</filename>
 			<folder>forms</folder>
 			<folder>language</folder>
+			<folder>layouts</folder>
 			<folder>presets</folder>
 			<folder>services</folder>
 			<folder>sql</folder>

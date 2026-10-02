@@ -98,6 +98,18 @@ function commit(cats, action) {
     ts: Math.floor(Date.now() / 1000),
   };
 
+  // Live preview in the backend: the interface reacts, nothing is stored, sent or run.
+  if (api._preview) {
+    api._state.consent = consent;
+    hideBanner();
+
+    if (preferences()?.open) {
+      preferences().close();
+    }
+
+    return;
+  }
+
   writeCookie(consent);
   api._state.consent = consent;
   api._gcmUpdate();
@@ -533,7 +545,7 @@ function init() {
     contract,
   });
 
-  if (!api._scan) {
+  if (!api._scan && !api._preview) {
     cleanup();
   }
 

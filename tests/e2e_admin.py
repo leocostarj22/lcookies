@@ -113,6 +113,23 @@ check("regex badge", "Regular expression" in html)
 html = req("?option=com_config&view=component&component=com_lcookies")
 check("options renders", "Policy Version" in html and "Consent Mode" in html)
 clean(html, "options")
+check("options: live preview in the appearance and texts tabs", html.count("data-lcookies-preview>") == 2 and "preview.min.js" in html)
+
+# Live preview: renders unsaved options with the frontend layouts, nothing else
+ptok = re.search(r'"com_lcookies.preview":\{[^}]*"token":"([a-f0-9]{32})"', html)
+ptok = ptok.group(1) if ptok else ""
+params_before = sql("SELECT params FROM jos_extensions WHERE element = 'com_lcookies' AND type = 'component'")
+preview = req("?option=com_lcookies&task=preview.render", {ptok: "1", "show": "preferences", "jform[layout]": "bar-top", "jform[theme]": "dark",
+    "jform[color_primary]": "#ff0000", "jform[border_radius]": "99", "jform[text_title]": "Hello <b>preview</b>",
+    "jform[text_message]": "<p>Msg</p><script>alert(1)</script>", "jform[log_consents]": "1"})
+check("preview renders the unsaved options", "lcookies-banner--bar-top" in preview and 'data-lcookies-theme="dark"' in preview
+      and "--lcookies-primary: #ff0000" in preview and "--lcookies-radius: 32px" in preview
+      and 'data-lcookies-preview-show="preferences"' in preview, preview[:300])
+check("preview escapes and filters the texts", "Hello &lt;b&gt;preview&lt;/b&gt;" in preview and "<p>Msg</p>" in preview and "<script>alert" not in preview)
+check("preview mode: no endpoint, nothing blocked", '"preview":true' in preview and '"endpoint":null' in preview)
+check("preview saves nothing", sql("SELECT params FROM jos_extensions WHERE element = 'com_lcookies' AND type = 'component'") == params_before)
+denied = req("?option=com_lcookies&task=preview.render", {"jform[layout]": "modal"}, raw=True)
+check("preview refused without token", getattr(denied, "code", getattr(denied, "status", 0)) == 403)
 
 # Edit core category: alias/required/state locked
 html = req("?option=com_lcookies&task=category.edit&id=1")
@@ -547,6 +564,8 @@ check("view permission granted: list visible, no export button", U2 in html and 
 r = req(f"?option=com_lcookies&task=consents.export&{token(html)}=1", opener=mop, raw=True)
 body = r.read().decode("utf-8", "replace")
 check("export refused without export permission", "created_utc" not in body, body[:200])
+denied = req("?option=com_lcookies&task=preview.render", {token(req("?option=com_lcookies&view=services", opener=mop)): "1"}, opener=mop, raw=True)
+check("manager without options permission: preview refused", getattr(denied, "code", getattr(denied, "status", 0)) == 403)
 html = req("?option=com_lcookies&view=scanner", opener=mop)
 check("manager without scan permission: results only, no start button", 'id="lcookies-scanner"' in html and "data-lcookies-scan-start" not in html)
 check("manager without scan permission: scan refused", scan("start", {}, token(req("?option=com_lcookies&view=services", opener=mop)), opener=mop).get("success") is False)

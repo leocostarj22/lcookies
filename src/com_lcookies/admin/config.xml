@@ -86,7 +86,8 @@
 		</field>
 	</fieldset>
 
-	<fieldset name="appearance" label="COM_LCOOKIES_CONFIG_APPEARANCE">
+	<fieldset name="appearance" label="COM_LCOOKIES_CONFIG_APPEARANCE" addfieldprefix="Lcsilva\Component\Lcookies\Administrator\Field">
+		<field name="preview" type="lcookiespreview" label="COM_LCOOKIES_PREVIEW_LABEL" hiddenLabel="true" parentclass="lcookies-preview-group" />
 		<field
 			name="layout"
 			type="list"
@@ -151,7 +152,8 @@
 		</field>
 	</fieldset>
 
-	<fieldset name="texts" label="COM_LCOOKIES_CONFIG_TEXTS" description="COM_LCOOKIES_CONFIG_TEXTS_DESC">
+	<fieldset name="texts" label="COM_LCOOKIES_CONFIG_TEXTS" description="COM_LCOOKIES_CONFIG_TEXTS_DESC" addfieldprefix="Lcsilva\Component\Lcookies\Administrator\Field">
+		<field name="preview_texts" type="lcookiespreview" label="COM_LCOOKIES_PREVIEW_LABEL" hiddenLabel="true" parentclass="lcookies-preview-group" />
 		<field name="text_title" type="text" label="COM_LCOOKIES_CONFIG_TEXT_TITLE_LABEL" filter="string" />
 		<field name="text_message" type="textarea" label="COM_LCOOKIES_CONFIG_TEXT_MESSAGE_LABEL" rows="4" filter="safehtml" />
 		<field name="text_accept" type="text" label="COM_LCOOKIES_CONFIG_TEXT_ACCEPT_LABEL" filter="string" />

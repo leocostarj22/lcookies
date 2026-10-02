@@ -429,6 +429,46 @@ async function main() {
     const kept = (await scanContext.cookies(url)).find((c) => c.name === 'lcookies_consent');
     check("scan keeps the administrator's own choice", kept && kept.value === ownChoice, kept && kept.value);
     check('no JavaScript errors (scanner)', adminErrors.length === 0, adminErrors.join(' | '));
+
+    /* 15. Live preview in the options ---------------------------------------------------------- */
+    console.log('Live preview');
+    const paramsBefore = fixture('params').trim();
+    const recordsPreview = records().length;
+    await admin.goto(`${url}/administrator/index.php?option=com_config&view=component&component=com_lcookies`);
+    await admin.click('button[role="tab"][aria-controls="appearance"]');
+    const preview = admin.frameLocator('#appearance [data-lcookies-preview] iframe');
+    const rendered = (selector, attribute) => preview.locator(selector).getAttribute(attribute, { timeout: 10000 }).catch(() => null);
+    await preview.locator('[data-lcookies-banner]').waitFor({ timeout: 15000 });
+    const savedLayout = JSON.parse(paramsBefore).layout || 'box-bottom-left';
+    check('preview shows the banner with the saved layout', (await rendered('[data-lcookies-banner]', 'class') || '').includes(`--${savedLayout}`), savedLayout);
+    const newLayout = savedLayout === 'bar-top' ? 'bar-bottom' : 'bar-top';
+    await admin.selectOption('#jform_layout', newLayout);
+    await admin.selectOption('#jform_theme', 'dark');
+    await admin.waitForFunction((layout) => document.querySelector('#appearance [data-lcookies-preview] iframe')
+      .contentDocument?.querySelector(`.lcookies-banner--${layout}`), newLayout, { timeout: 15000 }).catch(() => {});
+    check('preview follows the layout and theme before saving', (await rendered('[data-lcookies-banner]', 'class') || '').includes(`--${newLayout}`)
+      && await rendered('#lcookies', 'data-lcookies-theme') === 'dark');
+    await admin.click('button[role="tab"][aria-controls="texts"]');
+    await admin.fill('#jform_text_title', 'Preview title');
+    const textsPreview = admin.frameLocator('#texts [data-lcookies-preview] iframe');
+    await admin.waitForFunction(() => document.querySelector('#texts [data-lcookies-preview] iframe')
+      .contentDocument?.querySelector('#lcookies-banner-title')?.textContent === 'Preview title', null, { timeout: 15000 }).catch(() => {});
+    check('preview follows the texts', await textsPreview.locator('#lcookies-banner-title').textContent() === 'Preview title');
+    await textsPreview.locator('[data-lcookies-banner] [data-lcookies-action="accept"]').click();
+    check('a choice in the preview only hides the banner', !(await textsPreview.locator('[data-lcookies-banner]').isVisible())
+      && !(await scanContext.cookies(url)).some((c) => c.name === 'lcookies_consent' && c.value !== ownChoice) && records().length === recordsPreview);
+    await admin.click('#texts [data-lcookies-preview-show="preferences"]');
+    await admin.waitForFunction(() => document.querySelector('#texts [data-lcookies-preview] iframe')
+      .contentDocument?.querySelector('[data-lcookies-preferences]')?.open, null, { timeout: 15000 }).catch(() => {});
+    check('preview of the preferences', await textsPreview.locator('[data-lcookies-preferences]').evaluate((d) => d.open));
+    violations = await textsPreview.locator('body').evaluate(async (body, axeSource) => {
+      body.ownerDocument.defaultView.eval(axeSource);
+      const result = await body.ownerDocument.defaultView.axe.run(body.ownerDocument.getElementById('lcookies'), { resultTypes: ['violations'] });
+      return result.violations.map((v) => `${v.id} (${v.nodes.length})`);
+    }, AXE);
+    check('axe: preview of the preferences without violations', violations.length === 0, violations.join(', '));
+    check('preview saves nothing', fixture('params').trim() === paramsBefore);
+    check('no JavaScript errors (preview)', adminErrors.length === 0, adminErrors.join(' | '));
     await scanContext.close();
     fixture('enable', 'system', 'guidedtours', tours);
 

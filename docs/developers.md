@@ -76,6 +76,19 @@ Templates e extensões não precisam de fazer nada para suportar o scanner. Se u
 - O e-mail vai para os endereços da tarefa ou, se a tarefa não tiver endereços, para os Super Utilizadores que recebem e-mails do sistema.
 - Se a tarefa correr pela linha de comandos, defina `$live_site` no `configuration.php` para os endereços das páginas ficarem certos.
 
+## Pré-visualização nas opções
+
+Os separadores *Aparência* e *Textos* das opções mostram uma pré-visualização do banner e das preferências. A cada alteração ao formulário, o `media/com_lcookies/js/preview.js` envia as opções ainda por guardar para `task=preview.render`.
+
+Essa tarefa (`Administrator\Controller\PreviewController`, permissão *Opções* ou *Administrar*) devolve uma página com:
+- os layouts do `plg_system_lcookies`, incluindo os overrides do template predefinido do site;
+- o CSS e o JavaScript do frontend, em modo de pré-visualização (`preview: true`);
+- os textos no idioma predefinido do site.
+
+No modo de pré-visualização não se lê nem grava a escolha, não se envia registo e nenhum serviço é executado. As opções só ficam guardadas quando se carrega em *Guardar*.
+
+A página aparece num `iframe` com `srcdoc`, por isso fica sujeita à política de segurança de conteúdo (CSP) do backend. Se o plugin *Sistema - Cabeçalhos HTTP* tiver uma CSP sem `'unsafe-inline'` para scripts, a pré-visualização fica em branco.
+
 ## Regra de ouro: cache
 
 A forma mais segura é deixar o código sempre no HTML e deixar o LCookies bloqueá-lo:

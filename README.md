@@ -9,6 +9,7 @@ Sistema de consentimento de cookies para **Joomla 5.2+ e 6**, feito para cumprir
   - Tema claro, escuro ou automático
   - Cor e cantos à escolha
   - Botão flutuante para mudar de ideias
+  - Pré-visualização em tempo real nas opções, em computador e em telemóvel, antes de guardar
 - **Bloqueio real:** scripts, iframes e o código dos serviços ficam bloqueados até haver consentimento.
   - O HTML é igual para todos os visitantes, por isso o site pode usar cache de página e CDN.
   - Os iframes bloqueados mostram um aviso com um botão para permitir.

@@ -7,6 +7,7 @@
  *   rules: [{c: category, s: service, p: [patterns]}], gcm: null | {waitForUpdate, adsDataRedaction,
  *   urlPassthrough, map: {category: [consent types]}}, scan: "none" | "all" (cookie scanner only, with
  *   all: [every category]); in scan mode the visitor's own choice is ignored and nothing is stored.
+ *   preview: true (live preview of the options in the backend): no stored choice, nothing stored.
  *
  * It reads the stored consent, sets the Google Consent Mode defaults, and keeps scripts and iframes
  * that other scripts create later blocked until their category is accepted. It defines
@@ -52,6 +53,8 @@
 
   if (c.scan) {
     state.consent = c.scan === 'all' ? { id: '', v: c.v, cats: c.all.slice(), ts: Math.floor(Date.now() / 1000) } : null;
+  } else if (c.preview) {
+    state.consent = null;
   }
 
   function granted(cat) {
@@ -331,5 +334,6 @@
     _readConsent: readConsent,
     _gcmUpdate: gcmUpdate,
     _scan: c.scan || null,
+    _preview: Boolean(c.preview),
   };
 }(window, document));
