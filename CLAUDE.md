@@ -4,9 +4,9 @@ Sistema de consentimento de cookies para Joomla 5.x e 6.x. Plano completo: `docs
 
 ## Estado atual
 - **Fase concluída:** 5.1 — Extras antes da 1.0 (v0.6.0; ver `docs/fases/fase-5.1.md`). Antes: Fase 5 (v0.5.0), releases 0.1.0–0.4.0; servidor de atualizações ativo.
-- **Testes:** admin 130/130, API 42/42, front 116/116, idioma 12/12 nos 4 sites de teste; atualizações 0.4.0 → 0.5.0 → 0.6.0 testadas (MariaDB e PostgreSQL).
-- **Onde parámos (2026-10-02):** commit `chore(release): 0.6.0` feito; o autor envia e cria as tags `v0.5.0` (commit `60e54e2`) e `v0.6.0`.
-  - **A seguir:** Fase 6 — Qualidade (Docker J5/J6, PHPStan/PHP-CS-Fixer, testes de instalação/atualização/desinstalação no CI, auditoria de acessibilidade, revisão de traduções).
+- **Fase em curso:** 6 — Qualidade, com todos os itens feitos (PHPStan/PHP-CS-Fixer, CI com Joomla 5.2/5.4/6.0 + MariaDB/PostgreSQL, `tests/install_cycle.sh`, auditoria de acessibilidade do backend, revisão de traduções). Falta fechar: `docs/fases/fase-6.md`, versão e tag (proposta ao autor: 1.0.0).
+- **Testes:** admin 130/130, API 42/42, front 126/126, idioma 12/12 nos 4 sites de teste; ciclo de instalação/atualização/desinstalação verde num Joomla 6 instalado de raiz.
+- **Onde parámos (2026-10-02):** à espera da decisão do autor sobre a versão de fecho (1.0.0) e do push/tags (`v0.5.0` em `60e54e2`, `v0.6.0` em `9248d03`).
   - Testes e desenvolvimento só neste ambiente (sem testes em sites externos).
 
 ## Fluxo de trabalho por fase
