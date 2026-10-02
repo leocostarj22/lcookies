@@ -79,6 +79,7 @@ Descarregue `pkg_lcookies-X.Y.Z.zip` da [última release](https://github.com/leo
 - Plano e arquitetura: [`docs/PLAN.md`](docs/PLAN.md)
 - Integração (códigos de conteúdo, módulo, privacidade, PHP e JavaScript): [`docs/developers.md`](docs/developers.md)
 - API REST: [`docs/api.md`](docs/api.md)
+- Segurança (reportar vulnerabilidades e proteções): [`SECURITY.md`](SECURITY.md)
 - Contrato do frontend: [`docs/contract.schema.json`](docs/contract.schema.json)
 - Estado e notas de cada fase: [`TODO.md`](TODO.md), [`docs/fases/`](docs/fases/)
 
