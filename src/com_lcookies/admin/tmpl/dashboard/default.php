@@ -138,4 +138,53 @@ $cards = [
             </div>
         </section>
     <?php endif; ?>
+
+    <?php if ($this->policies !== null) : ?>
+        <section class="card mb-4" aria-labelledby="lcookies-policies">
+            <div class="card-body">
+                <h2 id="lcookies-policies" class="h4"><?php echo Text::_('COM_LCOOKIES_DASHBOARD_POLICIES'); ?></h2>
+                <p class="small text-muted"><?php echo Text::_('COM_LCOOKIES_DASHBOARD_POLICIES_DESC'); ?></p>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0" id="lcookies-policy-history">
+                        <caption class="visually-hidden"><?php echo Text::_('COM_LCOOKIES_DASHBOARD_POLICIES'); ?></caption>
+                        <thead>
+                            <tr>
+                                <th scope="col"><?php echo Text::_('COM_LCOOKIES_HEADING_POLICY_VERSION'); ?></th>
+                                <th scope="col"><?php echo Text::_('COM_LCOOKIES_DASHBOARD_FIRST_CHOICE'); ?></th>
+                                <th scope="col"><?php echo Text::_('COM_LCOOKIES_DASHBOARD_LAST_CHOICE'); ?></th>
+                                <th scope="col" class="text-end"><?php echo Text::_('COM_LCOOKIES_DASHBOARD_CHOICES'); ?></th>
+                                <th scope="col" class="text-end"><?php echo Text::_('COM_LCOOKIES_DASHBOARD_VISITORS'); ?></th>
+                                <th scope="col" class="text-end"><?php echo Text::_('COM_LCOOKIES_CONSENT_ACTION_ACCEPT_ALL'); ?></th>
+                                <th scope="col" class="text-end"><?php echo Text::_('COM_LCOOKIES_CONSENT_ACTION_REJECT_ALL'); ?></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($this->policies as $policy) : ?>
+                                <tr data-lcookies-policy-version="<?php echo (int) $policy['version']; ?>">
+                                    <th scope="row">
+                                        <?php echo (int) $policy['version']; ?>
+                                        <?php if ($policy['current']) : ?>
+                                            <span class="badge bg-success ms-1"><?php echo Text::_('COM_LCOOKIES_DASHBOARD_CURRENT'); ?></span>
+                                        <?php endif; ?>
+                                    </th>
+                                    <td><?php echo $policy['first'] ? HTMLHelper::_('date', $policy['first'], Text::_('DATE_FORMAT_LC4')) : '–'; ?></td>
+                                    <td><?php echo $policy['last'] ? HTMLHelper::_('date', $policy['last'], Text::_('DATE_FORMAT_LC4')) : '–'; ?></td>
+                                    <td class="text-end"><?php echo $policy['total']; ?></td>
+                                    <td class="text-end"><?php echo $policy['consents']; ?></td>
+                                    <td class="text-end"><?php echo $percent($policy['accepted'], $policy['total']); ?>%</td>
+                                    <td class="text-end"><?php echo $percent($policy['rejected'], $policy['total']); ?>%</td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    <?php endif; ?>
+
+    <form action="<?php echo Route::_('index.php?option=com_lcookies&view=dashboard'); ?>" method="post" name="adminForm" id="adminForm">
+        <input type="hidden" name="task" value="">
+        <input type="hidden" name="boxchecked" value="0">
+        <?php echo HTMLHelper::_('form.token'); ?>
+    </form>
 </div>

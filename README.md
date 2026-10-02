@@ -25,7 +25,7 @@ Sistema de consentimento de cookies para **Joomla 5.2+ e 6**, feito para cumprir
   - Encontra os cookies e o armazenamento que o site usa, e os pedidos a outros sites feitos antes de o visitante escolher.
   - Compara-os com o que está declarado e sugere o serviço certo da biblioteca.
   - Pode correr semanalmente como tarefa agendada e avisar por e-mail.
-- **Painel** com totais, aceitação por categoria nos últimos 30 dias e alertas de configuração.
+- **Painel** com totais, aceitação por categoria nos últimos 30 dias, histórico das versões da política, um botão para publicar uma nova versão e alertas de configuração.
 - **Biblioteca de serviços:** 13 serviços prontos a usar, como GA4, GTM, Google Ads, Meta, LinkedIn, TikTok, Hotjar, Clarity, Matomo, YouTube, Vimeo, Google Maps e reCAPTCHA.
 - **Importação e exportação** em JSON.
 - **Edição em lote**, por exemplo para mover serviços entre categorias.

@@ -41,6 +41,13 @@ class HtmlView extends BaseHtmlView
     protected $alerts = [];
 
     /**
+     * Policy versions with their records, null without the permission to view consent records.
+     *
+     * @var  ?array
+     */
+    protected $policies;
+
+    /**
      * @param   string  $tpl  The name of the template file to parse.
      *
      * @return  void
@@ -54,7 +61,8 @@ class HtmlView extends BaseHtmlView
         $this->alerts  = $model->getAlerts();
 
         if ($this->getCurrentUser()->authorise('lcookies.consents.view', 'com_lcookies')) {
-            $this->stats = $model->getStats();
+            $this->stats    = $model->getStats();
+            $this->policies = $model->getPolicyHistory();
         }
 
         $user = $this->getCurrentUser();
@@ -62,7 +70,12 @@ class HtmlView extends BaseHtmlView
         ToolbarHelper::title(Text::_('COM_LCOOKIES_DASHBOARD_TITLE'), 'shield-alt');
 
         if ($user->authorise('core.admin', 'com_lcookies') || $user->authorise('core.options', 'com_lcookies')) {
-            $this->getDocument()->getToolbar()->preferences('com_lcookies');
+            $toolbar = $this->getDocument()->getToolbar();
+            $toolbar->confirmButton('refresh', 'COM_LCOOKIES_DASHBOARD_NEW_POLICY', 'dashboard.newPolicy')
+                ->message('COM_LCOOKIES_DASHBOARD_NEW_POLICY_CONFIRM')
+                ->icon('icon-refresh')
+                ->listCheck(false);
+            $toolbar->preferences('com_lcookies');
         }
 
         parent::display($tpl);

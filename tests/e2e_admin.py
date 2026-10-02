@@ -435,6 +435,16 @@ check("dashboard acceptance by category", rates == {"preferences": "33", "statis
 check("dashboard alert: no privacy page", 'data-lcookies-alert="no_privacy_page"' in html)
 check("dashboard: no plugin/unclassified alerts by default",
       re.findall(r'data-lcookies-alert="(\w+)"', html) == ["never_scanned", "no_privacy_page"], re.findall(r'data-lcookies-alert="(\w+)"', html))
+rows = dict(re.findall(r'data-lcookies-policy-version="(\d+)">(.*?)</tr>', html, re.S))
+check("dashboard: policy version history", list(rows) == ["1"] and "Current" in rows["1"]
+      and re.findall(r'class="text-end">(\d+)%?</td>', rows["1"])[:2] == ["3", "2"], str(rows)[:300])
+params_dash = sql("SELECT params FROM jos_extensions WHERE element = 'com_lcookies' AND type = 'component'")
+html = req("?option=com_lcookies&view=dashboard", {"task": "dashboard.newPolicy", token(html): "1"})
+contract = urllib.request.urlopen(BASE + "/").read().decode("utf-8", "replace")
+rows = dict(re.findall(r'data-lcookies-policy-version="(\d+)">(.*?)</tr>', html, re.S))
+check("new policy version published", "Policy version 2 published" in html and '"policyVersion":2' in contract
+      and list(rows) == ["2", "1"] and "Current" in rows["2"] and "Current" not in rows["1"], str(messages(html)) + str(list(rows)))
+sql("UPDATE jos_extensions SET params = '" + params_dash.replace("'", "''") + "' WHERE element = 'com_lcookies' AND type = 'component'")
 sql("UPDATE jos_extensions SET enabled = 0 WHERE type = 'plugin' AND folder = 'system' AND element = 'lcookies'")
 sql("INSERT INTO jos_lcookies_services (category_id, alias, title, provider, description, block_patterns, state, ordering, created, modified) "
     "SELECT id, 'lcdash-svc', 'Dash', '', '', NULL, 1, 99, NOW(), NOW() FROM jos_lcookies_categories WHERE alias = 'unclassified'")
@@ -579,7 +589,8 @@ login(mop, "lcmanager", "Manager123456789!")
 html = req("?option=com_lcookies&view=services", opener=mop)
 check("manager can manage the component", "This website" in html, html[:200])
 html = req("?option=com_lcookies&view=dashboard", opener=mop)
-check("manager dashboard without consent statistics", 'id="lcookies-dashboard"' in html and 'id="lcookies-stats"' not in html, html[:200])
+check("manager dashboard without consent statistics", 'id="lcookies-dashboard"' in html and 'id="lcookies-stats"' not in html
+      and 'id="lcookies-policies"' not in html and "dashboard.newPolicy" not in html, html[:200])
 html = req("?option=com_lcookies&view=consents", opener=mop)
 check("manager without permission: consents refused", U2 not in html and ("not authorised" in html.lower() or "403" in html), html[:200])
 sql("UPDATE jos_assets SET rules = '{\"core.manage\":{\"6\":1},\"lcookies.consents.view\":{\"6\":1}}' WHERE name = 'com_lcookies'")

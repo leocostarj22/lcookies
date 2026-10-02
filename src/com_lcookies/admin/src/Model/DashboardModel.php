@@ -127,6 +127,89 @@ class DashboardModel extends BaseDatabaseModel
     }
 
     /**
+     * Policy versions with their consent records (only the records still kept, see the retention
+     * period); the current version is always included.
+     *
+     * @return  array  Newest first: `version`, `current`, `first`, `last` (UTC or null), `total`,
+     *                 `consents` (distinct ids), `accepted`, `rejected` (choices of all / none).
+     */
+    public function getPolicyHistory(): array
+    {
+        $db       = $this->getDatabase();
+        $current  = max(1, (int) ComponentHelper::getParams('com_lcookies')->get('policy_version', 1));
+        $accepted = 'accept_all';
+        $rejected = 'reject_all';
+        $query    = $db->createQuery()
+            ->select([
+                $db->quoteName('policy_version', 'version'),
+                'MIN(' . $db->quoteName('created') . ') AS ' . $db->quoteName('first'),
+                'MAX(' . $db->quoteName('created') . ') AS ' . $db->quoteName('last'),
+                'COUNT(*) AS ' . $db->quoteName('total'),
+                'COUNT(DISTINCT ' . $db->quoteName('consent_uuid') . ') AS ' . $db->quoteName('consents'),
+                'SUM(CASE WHEN ' . $db->quoteName('action') . ' = :accepted THEN 1 ELSE 0 END) AS ' . $db->quoteName('accepted'),
+                'SUM(CASE WHEN ' . $db->quoteName('action') . ' = :rejected THEN 1 ELSE 0 END) AS ' . $db->quoteName('rejected'),
+            ])
+            ->from($db->quoteName('#__lcookies_consents'))
+            ->group($db->quoteName('policy_version'))
+            ->bind(':accepted', $accepted)
+            ->bind(':rejected', $rejected);
+
+        $history = [];
+
+        foreach ($db->setQuery($query)->loadAssocList() as $row) {
+            $version           = (int) $row['version'];
+            $history[$version] = [
+                'version'  => $version,
+                'current'  => $version === $current,
+                'first'    => $row['first'],
+                'last'     => $row['last'],
+                'total'    => (int) $row['total'],
+                'consents' => (int) $row['consents'],
+                'accepted' => (int) $row['accepted'],
+                'rejected' => (int) $row['rejected'],
+            ];
+        }
+
+        $history[$current] ??= ['version' => $current, 'current' => true, 'first' => null, 'last' => null, 'total' => 0, 'consents' => 0, 'accepted' => 0, 'rejected' => 0];
+        krsort($history);
+
+        return array_values($history);
+    }
+
+    /**
+     * Publishes a new version of the cookie policy: every visitor is asked again.
+     *
+     * @return  integer  The new version.
+     */
+    public function newPolicyVersion(): int
+    {
+        $db      = $this->getDatabase();
+        $type    = 'component';
+        $element = 'com_lcookies';
+        $params  = clone ComponentHelper::getParams('com_lcookies');
+        $version = max(1, (int) $params->get('policy_version', 1)) + 1;
+
+        $params->set('policy_version', $version);
+
+        $json  = $params->toString();
+        $query = $db->createQuery()
+            ->update($db->quoteName('#__extensions'))
+            ->set($db->quoteName('params') . ' = :params')
+            ->where([$db->quoteName('type') . ' = :type', $db->quoteName('element') . ' = :element'])
+            ->bind(':params', $json)
+            ->bind(':type', $type)
+            ->bind(':element', $element);
+
+        $db->setQuery($query)->execute();
+
+        // Component options are cached in _system; the contract cache is keyed by the options.
+        $this->cleanCache('_system');
+        $this->cleanCache('com_lcookies');
+
+        return $version;
+    }
+
+    /**
      * Problems in the configuration.
      *
      * @return  array  List of [type (danger|warning|info), language key, argument, link].
