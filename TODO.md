@@ -78,6 +78,6 @@ Ao fechar uma fase: marcar tudo, preencher `docs/fases/fase-N.md` e atualizar o 
 - [x] Ambiente de testes J5.x e J6.x na CI (GitHub Actions com MariaDB e PostgreSQL em contentores; `tests/ci/setup-joomla.sh`)
 - [x] PHPStan (nível 5) / PHP-CS-Fixer (regras do core do Joomla)
 - [x] Testes de instalação, atualização e desinstalação (`tests/install_cycle.sh`, também na CI)
-- [ ] Auditoria de acessibilidade
-- [ ] Revisão de traduções
-- [ ] Build do pacote (script) + release
+- [x] Auditoria de acessibilidade (axe WCAG 2.2 A/AA em todas as páginas do backend, além do frontend; contraste, regiões com scroll focáveis, ligações sublinhadas)
+- [x] Revisão de traduções (frontend com `tests/e2e_lang.mjs`; backend revisto: sem termos do português do Brasil, textos alinhados com a interface)
+- [x] Build do pacote (script) + release (`build/build.py`, `release.yml`, servidor de atualizações)
