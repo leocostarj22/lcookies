@@ -49,8 +49,6 @@ Sistema de consentimento de cookies para **Joomla 5.2+ e 6**, feito para cumprir
 
 Os plugins ficam ativos na primeira instalação.
 
-> A release publicada é a 0.4.0. O painel, a biblioteca, a importação/exportação, a edição em lote, os códigos de conteúdo, o módulo, a integração com a Privacidade, o scanner, as tarefas agendadas e o `ConsentHelper` estão no ramo `main` e saem na versão 0.5.0.
-
 ## Requisitos
 
 - **Joomla:** 5.2 ou superior, incluindo o 6.x.

@@ -1,7 +1,7 @@
 {
   "$schema": "https://developer.joomla.org/schemas/json-schema/web_assets.json",
   "name": "mod_lcookies",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "LCookies module",
   "license": "GPL-2.0-or-later",
   "assets": [

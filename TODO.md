@@ -56,7 +56,7 @@ Ao fechar uma fase: marcar tudo, preencher `docs/fases/fase-N.md` e atualizar o 
 - [x] Documentação dos endpoints (`docs/api.md`)
 - [x] Teste `tests/e2e_api.py`
 
-## Fase 5 — Extras
+## Fase 5 — Extras ✅ (v0.5.0, ver `docs/fases/fase-5.md`)
 - [x] Biblioteca de presets (13 serviços: GA4, GTM, Google Ads, Meta, LinkedIn, TikTok, Hotjar, Clarity, Matomo, YouTube, Vimeo, Maps, reCAPTCHA) + import/export JSON (mesmo formato; `TransferModel`)
 - [x] Batch nas listas (mover serviços entre categorias, diálogo `joomla-dialog-batch` do core)
 - [x] Scanner (servidor + browser sem consentimento + browser com tudo aceite; `#__lcookies_scans`, ACL `lcookies.scan`, modo de scan com token no `plg_system`, sugestões da biblioteca, alertas no painel) + rotina `lcookies.scan` com template de e-mail

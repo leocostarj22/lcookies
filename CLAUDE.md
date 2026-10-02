@@ -3,18 +3,11 @@
 Sistema de consentimento de cookies para Joomla 5.x e 6.x. Plano completo: `docs/PLAN.md`. Tarefas: `TODO.md`.
 
 ## Estado atual
-- **Fase concluída:** 4 — Web Services API (v0.4.0, publicada; servidor de atualizações ativo)
-- **Fase em curso:** 5 — Extras.
-  - **Feito:** biblioteca de serviços e import/export, lote, dashboard, `ConsentHelper` + `onLCookiesConsentChange`, `plg_content_lcookies`, `mod_lcookies`, `plg_privacy_lcookies`, `plg_task_lcookies` (purga e scan agendados), scanner de cookies, pré-visualização nas opções, README.
-  - **Testes:** admin 89/89, API 42/42, front 83/83 nos 4 sites de teste.
-- **Onde parámos (2026-10-01):**
-  - **Em teste pelo autor:** `dist/pkg_lcookies-0.5.0-dev.zip` num site externo. Começar por recolher o que encontrou.
-  - **A seguir:** fecho da fase (versões 0.5.0, nota do README, `docs/fases/fase-5.md`, tag `v0.5.0`).
-  - **Fecho da fase:**
-    - subir todas as versões para 0.5.0;
-    - retirar do README a nota "A release publicada é a 0.4.0…";
-    - escrever `docs/fases/fase-5.md` e fazer o commit `chore(release): 0.5.0`;
-    - criar a tag `v0.5.0`.
+- **Fase concluída:** 5 — Extras (v0.5.0; ver `docs/fases/fase-5.md`). Releases anteriores: 0.1.0–0.4.0; servidor de atualizações ativo.
+- **Testes:** admin 124/124, API 42/42, front 106/106, idioma 12/12 nos 4 sites de teste; atualização 0.4.0 → 0.5.0 testada (MariaDB e PostgreSQL).
+- **Onde parámos (2026-10-02):** commit `chore(release): 0.5.0` feito; o autor cria e envia a tag `v0.5.0` (a Action publica a release).
+  - **A seguir:** decidir com o autor os "extras modernos" antes da 1.0 (nonce de CSP, consentimento entre subdomínios, histórico das versões da política) e depois a Fase 6 — Qualidade.
+  - Testes e desenvolvimento só neste ambiente (sem testes em sites externos).
 
 ## Fluxo de trabalho por fase
 1. Antes de começar: ler `TODO.md` e a nota da fase anterior em `docs/fases/`.
