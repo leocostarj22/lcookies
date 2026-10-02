@@ -74,7 +74,7 @@ Ao fechar uma fase: marcar tudo, preencher `docs/fases/fase-N.md` e atualizar o 
 - [x] Consentimento partilhado entre subdomínios (normalização e validação de `cookie_domain`, só usado nos hosts do domínio, recurso ao host atual se o browser recusar, alerta no painel)
 - [x] Histórico das versões da política no painel (escolhas, visitantes e aceitação por versão) + botão "Nova versão da política"
 
-## Fase 6 — Qualidade
+## Fase 6 — Qualidade ✅ (v1.0.0, ver `docs/fases/fase-6.md`)
 - [x] Ambiente de testes J5.x e J6.x na CI (GitHub Actions com MariaDB e PostgreSQL em contentores; `tests/ci/setup-joomla.sh`)
 - [x] PHPStan (nível 5) / PHP-CS-Fixer (regras do core do Joomla)
 - [x] Testes de instalação, atualização e desinstalação (`tests/install_cycle.sh`, também na CI)

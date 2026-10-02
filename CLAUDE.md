@@ -3,10 +3,9 @@
 Sistema de consentimento de cookies para Joomla 5.x e 6.x. Plano completo: `docs/PLAN.md`. Tarefas: `TODO.md`.
 
 ## Estado atual
-- **Fase concluída:** 5.1 — Extras antes da 1.0 (v0.6.0; ver `docs/fases/fase-5.1.md`). Antes: Fase 5 (v0.5.0), releases 0.1.0–0.4.0; servidor de atualizações ativo.
-- **Fase em curso:** 6 — Qualidade, com todos os itens feitos (PHPStan/PHP-CS-Fixer, CI com Joomla 5.2/5.4/6.0 + MariaDB/PostgreSQL, `tests/install_cycle.sh`, auditoria de acessibilidade do backend, revisão de traduções). Falta fechar: `docs/fases/fase-6.md`, versão e tag (proposta ao autor: 1.0.0).
-- **Testes:** admin 130/130, API 42/42, front 126/126, idioma 12/12 nos 4 sites de teste; ciclo de instalação/atualização/desinstalação verde num Joomla 6 instalado de raiz.
-- **Onde parámos (2026-10-02):** à espera da decisão do autor sobre a versão de fecho (1.0.0) e do push/tags (`v0.5.0` em `60e54e2`, `v0.6.0` em `9248d03`).
+- **Todas as fases do plano concluídas — v1.0.0** (Fase 6 — Qualidade; ver `docs/fases/fase-6.md`). Antes: 5.1 (v0.6.0), 5 (v0.5.0), 0.1.0–0.4.0; servidor de atualizações ativo.
+- **Testes:** admin 130/130, API 42/42, front 126/126, idioma 12/12 nos 4 sites de teste; atualizações 0.4.0/0.6.0 → 1.0.0, desinstalação e instalação de raiz verdes; CI em `.github/workflows/ci.yml`.
+- **Onde parámos (2026-10-02):** commit `chore(release): 1.0.0` feito; o autor envia o código e cria a tag `v1.0.0` (e, se quiser, `v0.5.0`/`v0.6.0`). A seguir: acompanhar a primeira execução da CI no GitHub; ideias pós-1.0 em `docs/fases/fase-6.md`.
   - Testes e desenvolvimento só neste ambiente (sem testes em sites externos).
 
 ## Fluxo de trabalho por fase
